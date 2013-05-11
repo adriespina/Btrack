@@ -356,7 +356,7 @@
             this.label_path_alambron.Name = "label_path_alambron";
             this.label_path_alambron.Size = new System.Drawing.Size(318, 32);
             this.label_path_alambron.TabIndex = 19;
-            this.label_path_alambron.Text = "Origin Path :";
+            this.label_path_alambron.Text = "C:\\Users\\Cesar\\Desktop\\Billetrack Adrian\\datos\\212119_alam";
             this.label_path_alambron.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // button3
@@ -399,7 +399,7 @@
             this.label_path_aceria.Name = "label_path_aceria";
             this.label_path_aceria.Size = new System.Drawing.Size(318, 32);
             this.label_path_aceria.TabIndex = 20;
-            this.label_path_aceria.Text = "Destiny Path :";
+            this.label_path_aceria.Text = "C:\\Users\\Cesar\\Desktop\\Billetrack Adrian\\datos\\212119_acer";
             this.label_path_aceria.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // button1

@@ -232,7 +232,7 @@ namespace Billetrack
 
             if (panel1.Controls.Contains(_cMatchingOffline))
             {
-                _cMatchingOffline.match.classificator.Dispose();
+                if (_cMatchingOffline.classificator!=null) _cMatchingOffline.classificator.Dispose();
             
             }
         }

@@ -5,6 +5,8 @@ using System.Text;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Windows.Forms;
 using System.Diagnostics;
+using SpinPlatform.Errors;
+using Microsoft.Office.Interop.Excel;
 
 
 namespace Billetrack
@@ -23,49 +25,67 @@ namespace Billetrack
         public CClassification(string excel)
         {
 
-            try
-            {
                 name = excel;
-               
-            }
-            catch (Exception e)
-            {
-                
-                throw;
-            }
-
-           
-
-           
-        
         
     }
     
-        public void InsertMatch(resultMatching[] results)
+        public void InsertMatch(resultMatching[] results,int index)
         {
-            xlApp = new Excel.Application();
-            xlWorkBook = xlApp.Workbooks.Open(name, 0, false, 5, misValue, misValue, true, misValue, "\t", false, false, 0, true, 1, 0);
-            xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
-            last = xlWorkSheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell, Type.Missing);
-            lastUsedRow = last.Row;
-
-            foreach (resultMatching rst in results)
+            try
             {
-                lastUsedRow++;
-                xlWorkSheet.Cells[lastUsedRow, 2] = rst.common_KeyPoints.ToString();
-                xlWorkSheet.Cells[lastUsedRow, 3] = rst.inside_KeyPoints.ToString();
-                xlWorkSheet.Cells[lastUsedRow, 4] = rst.quality.ToString();
-                xlWorkSheet.Cells[lastUsedRow, 5] = rst.total_KeyPoints.ToString();
-                xlWorkSheet.Cells[lastUsedRow, 6] = rst.total_other_keyPoints.ToString();        
+                xlApp = new Excel.Application();
+                //xlWorkBook = xlApp.Workbooks.Open(name, 0, false, 5, misValue, misValue, true, misValue, "\t", false, false, 0,false, 1, 0);
+                //xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
 
+               Workbooks  xlWorkBooks = xlApp.Workbooks;
+               xlWorkBook = xlWorkBooks.Open(name, 0, false, 5, misValue, misValue, true, misValue, "\t", false, false, 0, false, 1, 0);
+               Sheets xlWorkSheets = xlWorkBook.Worksheets;
+               xlWorkSheet = xlWorkSheets.get_Item(1);
+
+
+
+                last = xlWorkSheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell, Type.Missing);
+                Excel.Range range = xlWorkSheet.get_Range("A1", last);       
+                lastUsedRow = last.Row;
+                int initialrow = lastUsedRow;
+
+                foreach (resultMatching rst in results)
+                {
+                    lastUsedRow++;
+                    xlWorkSheet.Cells[lastUsedRow, 2] = rst.common_KeyPoints.ToString();
+                    xlWorkSheet.Cells[lastUsedRow, 3] = rst.inside_KeyPoints.ToString();
+                    xlWorkSheet.Cells[lastUsedRow, 4] = rst.quality.ToString();
+                    xlWorkSheet.Cells[lastUsedRow, 5] = rst.total_KeyPoints.ToString();
+                    xlWorkSheet.Cells[lastUsedRow, 6] = rst.total_other_keyPoints.ToString();
+                    xlWorkSheet.Cells[lastUsedRow, 7] = 0;
+
+                }
+               if(index>0) xlWorkSheet.Cells[initialrow+index+1, 7] = 1;
+                xlWorkBook.Save();               
+                xlWorkBook.Close(true, misValue, misValue);
+                xlWorkBooks.Close();
+                xlApp.Quit();
+                releaseObject(xlWorkSheets);
+                releaseObject(xlWorkBooks);
+                releaseObject(xlWorkSheet);
+                releaseObject(xlWorkBook);
+                releaseObject(xlApp);
+
+                //esto cerrara todo proceso que use excel
+                foreach (Process proceso in Process.GetProcesses())
+                {
+
+                    if (proceso.ProcessName.Contains("EXCEL.EXE"))
+                    {
+                        proceso.Kill();
+                    }
+                }
             }
-            xlWorkBook.Save();
+            catch (Exception e)
+            {
 
-            xlWorkBook.Close(true, misValue, misValue);
-            xlApp.Quit();
-            releaseObject(xlWorkSheet);
-            releaseObject(xlWorkBook);
-            releaseObject(xlApp);
+                throw new SpinException("Error saving matching statistics to excel file : " + e.Message);
+            }
         }
 
             #region dispose

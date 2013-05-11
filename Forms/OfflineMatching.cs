@@ -23,7 +23,7 @@ namespace Billetrack.Forms
         string pathacer, pathalam;
         Bitmap _cambioImagen = null;
         public bool _running = false;
-       public  CMatching match;
+        public CClassification classificator;
         #endregion
 
         public OfflineMatching()
@@ -43,6 +43,17 @@ namespace Billetrack.Forms
             dataGridView_resultados.Columns[5].Name = "Tiempo msec";
 
             InitializeBackgroundWorker();
+
+            try
+            {
+                classificator = new CClassification(@"C:\Users\Cesar\Desktop\Billetrack Adrian\Codigo\Billetrack64\Billetrack\Matching.xlsx");
+               // classificator = new CClassification("Matching.xlsx");
+
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("error creando clasificador" + e.Message);
+            }
         }
 
         #region WORKERS
@@ -110,7 +121,7 @@ namespace Billetrack.Forms
                 Stopwatch watch;
                 long matchTime;
                 int position_max = -1, it = 0;
-                match = new CMatching(8);
+                CMatching match = new CMatching(8);
                 resultMatching[] resultados = new resultMatching[ImagenesAceriavector.Length];
                 CMetodosAuxiliares aux = new CMetodosAuxiliares();
                 int matched = 0, matched_ok = 0;
@@ -138,6 +149,7 @@ namespace Billetrack.Forms
                     }
 
                     position_max = match.MatchingOneToVarius(path_recortada, ref ImagenesAceriavector, out resultados);
+                    classificator.InsertMatch(resultados, position_max);
 
                     watch.Stop();
 
@@ -273,17 +285,15 @@ namespace Billetrack.Forms
                 pathacer = label_path_aceria.Text;
                 label_path_aceria.Text = pathacer;
                 //  pathalam = @"C:\Users\Cesar\Desktop\billetrack_halcon\imagenes\220356_alam";
-               // pathalam = @"C:\Users\Cesar\Desktop\Billetrack Adrian\datos\212119_alam\";
+              //  pathalam = @"C:\Users\Cesar\Desktop\Billetrack Adrian\datos\212119_alam\";
                 pathalam = label_path_alambron.Text;
                 label_path_alambron.Text = pathalam;
 
-                if (label_path_aceria.Text != "." && label_path_alambron.Text != ".")
-                {
+                
                     pathacer = label_path_aceria.Text;
                     pathalam = label_path_alambron.Text;
-                }
-                else return;
 
+                    if (!(System.IO.Directory.Exists(pathacer) && System.IO.Directory.Exists(pathalam)))   return;
 
                 System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(pathacer);
                 System.IO.FileInfo[] files = null;

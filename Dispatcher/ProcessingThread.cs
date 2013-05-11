@@ -31,10 +31,11 @@ namespace Billetrack
         imgStats stats;
         Image<Gray, byte> CroppedImg;
         Billet _MatchedBillet;
+        
 
 
         public ProcessingThread(BilletrackDispatcher padre, string name, dynamic parametros)
-            : base(name)
+             : base(name)
         {
             _Padre = (BilletrackDispatcher)padre;
             _Parametros = parametros;
@@ -243,7 +244,7 @@ namespace Billetrack
         }
         public override void Closing()
         {
-            match.classificator.Dispose();
+
 
         }
 

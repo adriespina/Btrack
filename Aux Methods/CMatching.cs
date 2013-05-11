@@ -41,7 +41,7 @@ namespace Billetrack
         public bool DOUBLE_CHECK = true;
 
         int m_numberOfThreads;
-        public CClassification classificator;
+      
 
         public int NumberOfThreads
         {
@@ -68,17 +68,6 @@ namespace Billetrack
      public CMatching(int threads)
      {
          NumberOfThreads = threads;
-
-         try
-         {
-             classificator = new CClassification(@"C:\Users\Cesar\Desktop\Billetrack Adrian\Codigo\Billetrack64\Billetrack\Matching.xlsx");
-         }
-         catch (Exception e)
-         {
-             MessageBox.Show("error creando clasificador"+e.Message);
-         }
-        
-
      }
         
 
@@ -115,18 +104,7 @@ namespace Billetrack
             }
 
 
-            //OPCION1 HACERLO CON UN WAIT ANY
-
-    //        int contador=0;
-    //        while (contador<filenameMatrixObjects.Length)
-    //{
-    //         SmartThreadPool.WaitAny(tareas, MATCHING_TIMEOUT, false);
-    //         contador++;
-    //}
-    //        for (int i = 0; i < pResult2.Length; i++)
-    //        {
-    //            pResult2[i] = (resultMatching)tareas[i].Result;
-    //        }
+           
 
 
             //OPCION 2 HACERLO CON UN WAIT ALL
@@ -152,7 +130,8 @@ namespace Billetrack
             //cerramos el pool y copiamos los resultados obtenidos
             smartThreadPool.Shutdown();
             pResult = pResult2;
-            classificator.InsertMatch(pResult);
+
+        
 
             //Buscamos la mejor correspodencia y enviamos el indice 
             int indice_max_quality = -1, indice_max_matches = -2, indice_max_inside = -3, it = 0;
@@ -283,19 +262,30 @@ namespace Billetrack
 
 
                     //Envio el indice de mejor calidad aunque no coincidan
-                    if (max_quality >= THRESHOLD_QUALITY) return indice_max_quality;
+                    if (max_quality >= THRESHOLD_QUALITY)
+                    {
+                        return indice_max_quality;
+                    }
                     //si la calidad es mala no hay matching
-                    else return -1;
+                    else
+                    {
+                        return -1;
+                    }
 
                 }
             }
             else
             {
                 //Envio el indice de mejor calidad aunque no coincidan
-                if (max_quality >= THRESHOLD_QUALITY) return indice_max_quality;
+                if (max_quality >= THRESHOLD_QUALITY)
+                {
+                        return indice_max_quality;
+                }
                 //si la calidad es mala no hay matching
-                else 
+                else
+                {
                     return -1;
+                }
 
             }
         }
