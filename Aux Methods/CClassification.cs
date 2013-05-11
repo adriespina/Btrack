@@ -14,6 +14,10 @@ namespace Billetrack
    
    public class CClassification
     {
+
+       public int MAX_ROW_EXCEL= 1000000;
+       public int ROW_TO_DELETE_EXCEL = 10000;
+
         Excel.Application xlApp;
         Excel.Workbook xlWorkBook;
         Excel.Worksheet xlWorkSheet;
@@ -33,59 +37,74 @@ namespace Billetrack
         {
             try
             {
-                xlApp = new Excel.Application();
-                //xlWorkBook = xlApp.Workbooks.Open(name, 0, false, 5, misValue, misValue, true, misValue, "\t", false, false, 0,false, 1, 0);
-                //xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
-
-               Workbooks  xlWorkBooks = xlApp.Workbooks;
-               xlWorkBook = xlWorkBooks.Open(name, 0, false, 5, misValue, misValue, true, misValue, "\t", false, false, 0, false, 1, 0);
-               Sheets xlWorkSheets = xlWorkBook.Worksheets;
-               xlWorkSheet = xlWorkSheets.get_Item(1);
-
-
-
-                last = xlWorkSheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell, Type.Missing);
-                Excel.Range range = xlWorkSheet.get_Range("A1", last);       
-                lastUsedRow = last.Row;
+                  lastUsedRow = OpenXLS();
                 int initialrow = lastUsedRow;
 
                 foreach (resultMatching rst in results)
                 {
                     lastUsedRow++;
+                    xlWorkSheet.Cells[lastUsedRow, 1] = 0;
                     xlWorkSheet.Cells[lastUsedRow, 2] = rst.common_KeyPoints.ToString();
                     xlWorkSheet.Cells[lastUsedRow, 3] = rst.inside_KeyPoints.ToString();
                     xlWorkSheet.Cells[lastUsedRow, 4] = rst.quality.ToString();
                     xlWorkSheet.Cells[lastUsedRow, 5] = rst.total_KeyPoints.ToString();
                     xlWorkSheet.Cells[lastUsedRow, 6] = rst.total_other_keyPoints.ToString();
-                    xlWorkSheet.Cells[lastUsedRow, 7] = 0;
-
                 }
-               if(index>0) xlWorkSheet.Cells[initialrow+index+1, 7] = 1;
-                xlWorkBook.Save();               
-                xlWorkBook.Close(true, misValue, misValue);
-                xlWorkBooks.Close();
-                xlApp.Quit();
-                releaseObject(xlWorkSheets);
-                releaseObject(xlWorkBooks);
-                releaseObject(xlWorkSheet);
-                releaseObject(xlWorkBook);
-                releaseObject(xlApp);
-
-                //esto cerrara todo proceso que use excel
-                foreach (Process proceso in Process.GetProcesses())
-                {
-
-                    if (proceso.ProcessName.Contains("EXCEL.EXE"))
-                    {
-                        proceso.Kill();
-                    }
-                }
+               if(index>0) xlWorkSheet.Cells[initialrow+index+1, 1] = 1;
+               CloseSaveXLSX();
             }
             catch (Exception e)
             {
 
                 throw new SpinException("Error saving matching statistics to excel file : " + e.Message);
             }
+        }
+
+        private void CloseSaveXLSX()
+        {
+            xlWorkBook.Save();
+            xlWorkBook.Close(true, misValue, misValue);
+            xlApp.Quit();
+            releaseObject(xlWorkSheet);
+            releaseObject(xlWorkBook);
+            releaseObject(xlApp);
+
+            //esto cerrara todo proceso que use excel
+            //foreach (Process proceso in Process.GetProcesses())
+            //{
+
+            //    if (proceso.ProcessName.Contains("EXCEL.EXE"))
+            //    {
+            //        proceso.Kill();
+            //    }
+            //}
+            Process[] pProcess;
+            pProcess = System.Diagnostics.Process.GetProcessesByName("Excel");
+            pProcess[0].Kill();
+        }
+
+        private int OpenXLS()
+        {
+            xlApp = new Excel.Application();
+            xlWorkBook = xlApp.Workbooks.Open(name, 0, false, 5, misValue, misValue, true, misValue, "\t", false, false, 0, false, 1, 0);
+            xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+
+            last = xlWorkSheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell, Type.Missing);
+            Excel.Range range = xlWorkSheet.get_Range("A1", last);
+            lastUsedRow = last.Row;
+
+            if (lastUsedRow>MAX_ROW_EXCEL)
+            {
+                for (int i = 2; i < ROW_TO_DELETE_EXCEL+2; i++)
+                {
+                    ((Range)xlWorkSheet.Rows[i]).Delete(XlDeleteShiftDirection.xlShiftUp);
+                }
+                xlWorkBook.Save();
+                last = xlWorkSheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell, Type.Missing);
+                Excel.Range range2 = xlWorkSheet.get_Range("A1", last);
+                lastUsedRow = last.Row;
+            }
+            return lastUsedRow;
         }
 
             #region dispose
