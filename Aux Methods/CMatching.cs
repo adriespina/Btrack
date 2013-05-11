@@ -1,4 +1,4 @@
-﻿
+﻿  
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +12,7 @@ using Emgu.CV.Util;
 using System.IO;
 using System.Threading;
 using Amib.Threading;
+using System.Windows.Forms;
 
 
 namespace Billetrack
@@ -40,6 +41,7 @@ namespace Billetrack
         public bool DOUBLE_CHECK = true;
 
         int m_numberOfThreads;
+        CClassification classificator;
 
         public int NumberOfThreads
         {
@@ -66,6 +68,15 @@ namespace Billetrack
      public CMatching(int threads)
      {
          m_numberOfThreads = threads;
+
+         try
+         {
+             classificator = new CClassification(@"C:\Users\Cesar\Desktop\Billetrack Adrian\Codigo\Billetrack64\Billetrack\Matching.xlsx");
+         }
+         catch (Exception e)
+         {
+             MessageBox.Show("error creando clasificador"+e.Message);
+         }
         
 
      }
