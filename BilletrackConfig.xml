@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+
+  <General alt=" ">
+    <!--<INSTALLATION_NAME1 alt=" " type="string">ALAMBRON1</INSTALLATION_NAME1>-->
+    <INSTALLATION_NAME alt=" " type="string">ALAMBRON1</INSTALLATION_NAME>
+  </General>
+  <Match alt=" ">
+    <THRESHOLD_QUALITY alt=" " type="int">30</THRESHOLD_QUALITY>
+    <THRESHOLD_INSIDE alt=" " type="int">30</THRESHOLD_INSIDE>
+    <MATCHING_TIMEOUT alt=" IN MSEC" type="int">15000</MATCHING_TIMEOUT>
+    <DOUBLE_CHECK alt=" " type="bool">true</DOUBLE_CHECK>
+  </Match>a
+  <DataBase>
+    <!-- (Local)CONNECTION_STRING alt="cadena de conexion con la base de datos" type="string">User Id=BilletAdmin;Password=billetadmin;Data Source=(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = 10.250.40.49)(PORT = 1521))(CONNECT_DATA =(SID = XE)));</CONNECTION_STRING-->
+    <!-- (Spin Server)<CONNECTION_STRING alt="cadena de conexion con la base de datos" type="string">User Id=BilletrackAdmin;Password=billetrackadmin;Data Source=(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = 10.250.40.102)(PORT = 1521))(CONNECT_DATA =(SID = XE)));</CONNECTION_STRING>-->
+    <CONNECTION_STRING alt="cadena de conexion con la base de datos" type="string">User Id=BilletrackAdmin;Password=billetrackadmin;Data Source=(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.80.128)(PORT = 1521))(CONNECT_DATA =(SID = XE)));</CONNECTION_STRING>
+    <DATABASE_DEBUG alt="" type="bool">false</DATABASE_DEBUG>
+  </DataBase>
+  <Camera alt=" ">
+    <USING_CAMERA alt=" " type="bool">false</USING_CAMERA>
+    <PATH_IMAGE_SOURCE alt=" " type="string">C:\Users\Cesar\Desktop\Billetrack Adrian\datos\212119_alam\</PATH_IMAGE_SOURCE>
+    <MIN_EXPOSURE alt=" " type="int">32</MIN_EXPOSURE>
+    <MAX_EXPOSURE alt=" " type="int">66566</MAX_EXPOSURE>
+    <MIN_FRAMERATE alt=" " type="int">100</MIN_FRAMERATE>
+    <MAX_FRAMERATE alt=" " type="int">15000</MAX_FRAMERATE>
+  </Camera>
+  <PCCom alt=" ">
+    <COMSocketType alt=" " type="string">CLIENT</COMSocketType>
+    <COMPort alt=" " type="string">25090</COMPort>
+    <!--<COMIP alt=" " type="string">10.250.40.87</COMIP>-->
+    <COMIP alt=" " type="string">127.0.0.1</COMIP>
+    <COMBufferSize alt=" " type="string">250</COMBufferSize>
+    <COMTryconnectiontimes alt=" " type="string">3</COMTryconnectiontimes>
+  </PCCom>
+ 
+  <Detection alt=" ">
+    <BILLET_SEARCH_INITIAL_ROW alt=" " type="int">361</BILLET_SEARCH_INITIAL_ROW>
+    <BILLET_SEARCH_NROWS alt=" " type="int">11</BILLET_SEARCH_NROWS>
+    <BILLET_SEARCH_INITIAL_COL alt=" " type="int">568</BILLET_SEARCH_INITIAL_COL>
+    <BILLET_SEARCH_NCOLS alt=" " type="int">129</BILLET_SEARCH_NCOLS>
+    <BILLET_SEARCH_MIN alt=" " type="int">40</BILLET_SEARCH_MIN>
+    <BILLET_SEARCH_MAX alt=" " type="int">255</BILLET_SEARCH_MAX>
+    <BILLET_SEARCH_MAXFRAMES_TOSEARCH alt=" " type="int">200</BILLET_SEARCH_MAXFRAMES_TOSEARCH>    
+    <BILLET_SEARCH_FRAMES_TO_WAIT alt=" " type="int">8</BILLET_SEARCH_FRAMES_TO_WAIT>
+    
+   <BILLET_SPOTLIGHT_INITIAL_ROW alt=" " type="int"> 874</BILLET_SPOTLIGHT_INITIAL_ROW>
+   <BILLET_SPOTLIGHT_NROWS alt=" " type="int"> 115</BILLET_SPOTLIGHT_NROWS>
+   <BILLET_SPOTLIGHT_INITIAL_COL alt=" " type="int"> 1093</BILLET_SPOTLIGHT_INITIAL_COL>
+   <BILLET_SPOTLIGHT_NCOLS alt=" " type="int"> 77</BILLET_SPOTLIGHT_NCOLS>
+   <BILLET_SPOTLIGHT_MIN alt=" " type="int"> 10</BILLET_SPOTLIGHT_MIN>
+   <BILLET_SPOTLIGHT_MAX alt=" " type="int"> 50</BILLET_SPOTLIGHT_MAX>
+    
+   <BILLET_ROTATION_ANGLE alt=" " type="int">-54</BILLET_ROTATION_ANGLE><!-- -36 para la aceria --><!-- -54 para alambron -->
+    <BILLET_ROTATION_NUMBER alt=" " type="int">5</BILLET_ROTATION_NUMBER>
+    <BILLET_THRESHOLD_FOR_CROP alt=" " type="int">65</BILLET_THRESHOLD_FOR_CROP>
+    <PATH_EXAMPLE_IMG alt=" " type="string">sample.jpg</PATH_EXAMPLE_IMG>
+    <PATHSAVE_ONLINE_IMG alt=" " type="string">online.jpg</PATHSAVE_ONLINE_IMG>
+
+    <RefLine1_Point1_ROW alt=" " type="int"> 931</RefLine1_Point1_ROW>
+    <RefLine1_Point1_COL alt=" " type="int"> 574</RefLine1_Point1_COL>
+    <RefLine1_Point2_ROW alt=" " type="int"> 641</RefLine1_Point2_ROW>
+    <RefLine1_Point2_COL alt=" " type="int"> 971</RefLine1_Point2_COL>
+    <ShowRefLine1 alt=" " type="bool"> true</ShowRefLine1>
+
+    <RefLine2_Point1_ROW alt=" " type="int"> 911</RefLine2_Point1_ROW>
+    <RefLine2_Point1_COL alt=" " type="int"> 840</RefLine2_Point1_COL>
+    <RefLine2_Point2_ROW alt=" " type="int"> 620</RefLine2_Point2_ROW>
+    <RefLine2_Point2_COL alt=" " type="int"> 1234</RefLine2_Point2_COL>
+    <ShowRefLine2 alt=" " type="bool"> true</ShowRefLine2>
+    
+  </Detection>
+  <Log alt=" ">
+    <LOGTXTTraceLevel alt="Trace levels for writting in the log. May use letters D(development traces), I(information traces) or E(error traces)" type="string">D-I E</LOGTXTTraceLevel>
+    <LOGTXTMaxFileSize alt=" " type="int">80960</LOGTXTMaxFileSize>
+    <LOGTXTFilePath alt=" " type="string">C:\Billetrack\Logs\Log0.txt</LOGTXTFilePath>
+  </Log>
+  <LogError alt=" ">
+    <LOGTXTTraceLevel alt="Trace levels for writting in the log. May use letters D(development traces), I(information traces) or E(error traces)" type="string">D-I E</LOGTXTTraceLevel>
+    <LOGTXTMaxFileSize alt=" " type="int">80960</LOGTXTMaxFileSize>
+    <LOGTXTFilePath alt=" " type="string">C:\Billetrack\Logs\LogError0.txt</LOGTXTFilePath>
+  </LogError>
+    
+</Configuration>

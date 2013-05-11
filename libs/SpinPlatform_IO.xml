@@ -1,0 +1,668 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SpinPlatform_IO</name>
+    </assembly>
+    <members>
+        <member name="T:SpinPlatform.IO.SpinIOTxt">
+            <summary>
+            Módulo para trabajo con archivos de Texto IOTXT
+            <para>&#160;</para>
+            <para>Éste módulo realiza la lectura o escritura de un archivo de texto a través de los parámetros Set y Get respectivos</para>
+            <para>&#160;</para>
+            <remarks>
+            <para>GETDATA params:</para>
+            <para>"Get" - Obtiene el documento específico \n</para>
+            <para>&#160;</para>
+            <para>SETDATA params:</para>
+            <para>"Set" - Guarda el texto \n</para>
+            </remarks>
+            <para>&#160;</para>
+            <para>NOTA: Para su uso solo es necesario realizar un "Init" y los subsiguientes "SetData" o "GetData".</para>
+            <para>No es necesario el uso del método Start (Sin implementar)</para>
+            <para>El método Stop fuerza el cierre de todos los archivos de texto con los que se esté trabajando</para>
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIOTxt.Init(System.Object)">
+            <summary>
+            Inicializa el Modulo IOTXT.
+            </summary>
+            <param name="obj">
+            Campos Obligatorios:  \n
+            IOTXTRW (bool) \n
+            IOTXTFilePath (string) \n
+            IOTXTNoOverrideFile (bool) \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIOTxt.Start">
+            <summary>
+            No es necesario su uso
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIOTxt.GetData(System.Object@,System.String[])">
+            <summary>
+            Obtiene datos del Modulo IOTXT. 
+            </summary>
+            <param name="data">
+            Variable dinamica donde guardar los resultados: \n
+            Response (List(string)) resultados de "Get" \n
+            </param>
+            <param name="parameters">
+            "Get" - Obtiene el documento específico \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIOTxt.SetData(System.Object@,System.String[])">
+            <summary>
+            Guarda texto a archivo \n
+            </summary>
+            <param name="data">
+            Variable dinamica de donde obtener los datos a establecer \n
+            Message (List(string)) Lista de mensajes a guardar \n
+            </param>
+            <param name="parameters">
+            "Set" - Guarda el texto \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIOTxt.Stop">
+            <summary>
+            Para el Módulo IOTXT
+            </summary>
+        </member>
+        <member name="T:SpinPlatform.EMail.SpinEMail">
+            <summary>
+            Módulo para envío de EMAILS
+            <para>&#160;</para>
+            <para>Éste módulo realiza el envío de emails de forma asíncrona. Esto quiere decir que em hilo que lanza la llamada siempre está disponible no quedando esta manera bloqueado.</para>
+            <para>Así mismo tiene habilitados los siguientes métodos:</para>
+            <para>Envío de email sencillo a un único destinatario</para>
+            <para>Envío de email sencillo a una lista de destinatarios string[]</para>
+            <para>Envío de email con un archivo adjunto a un único destinatario</para>
+            <para>Envío de email con un archivo adjunto a una lista de destinatarios string[]</para>
+            <para>También tiene un método para modificar los parámetros de configuración del módulo "UpdateParams"</para>
+            <para>&#160;</para>
+            <remarks>
+            <para>SETDATA params:</para>
+            <para>"SendEmail" - Envía email standard \n</para>
+            <para>"SendEmailWithAttachment" - Envía email standard con un archivo adjunto \n</para>
+            <para>"UpdateParams" - Cambia información deenvío de servidor \n</para>
+            </remarks>
+            <para>&#160;</para>
+            <para>NOTA: Para su uso solo es necesario realizar un "Init" y los subsiguientes "SetData".</para>
+            <para>No es necesario el uso de los métodos GetData, Start o Stop (Sin implementar)</para>
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.EMail.SpinEMail.Init(System.Object)">
+            <summary>
+            Inicializa el Modulo de Emails.
+            Se le puede enviar en el init como parámetro tanto el objeto completo de configuración con el nombre genérico (SMTP) como el módulo SMTP directamente con cualquier nombre. 
+            </summary>
+            <param name="initData">
+            Campos Obligatorios:  \n
+            SMTPFrom (string) \n
+            SMTPHost (string) \n
+            SMTPPort (int) \n
+            SMTPPassword (string) \n
+            SMTPTimeOut (int) \n
+            SMTPEnableSSL (bool) \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.EMail.SpinEMail.SetData(System.Object@,System.String[])">
+            <summary>
+            Envía datos por el socket \n
+            </summary>
+            <param name="obj">
+            Variable dinamica de donde obtener los datos a establecer \n
+            SMTPMessage: Objeto de tipo String (All) \n
+            SMTPTo: Objeto de tipo String o string[] (All) \n
+            SMTPSubject: Objeto de tipo String (All) \n
+            SMTPAttachment:  Objeto de tipo String (SendEmailWithAttachment, SendEmailToListWithAttachment) \n
+            SMTPFrom: Objeto de tipo String (UpdateParams) \n
+            SMTPHost: Objeto de tipo String (UpdateParams) \n
+            SMTPPort: Objeto de tipo int (UpdateParams) \n
+            SMTPPassword: Objeto de tipo String (UpdateParams) \n
+            SMTPTimeOut: Objeto de tipo int (UpdateParams) \n
+            SMTPEnableSSL: Objeto de tipo bool (UpdateParams) \n
+            </param>
+            <param name="parameters">
+            "SendEmail" - Envía email standard \n
+            "SendEmailWithAttachment" - Envía email standard con un archivo adjunto \n
+            "UpdateParams" - Cambia información deenvío de servidor \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.EMail.SpinEMail.GetData(System.Object@,System.String[])">
+            <summary>
+            Obtiene datos del Email
+            </summary>
+            <param name="Data">
+            Variable dinamica donde guardar los resultados: \n
+            </param>
+            <param name="parameters">
+            </param>
+        </member>
+        <member name="M:SpinPlatform.EMail.SpinEMail.Start">
+            <summary>
+            Para el Módulo de  EMAIL
+            No es necesario
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.EMail.SpinEMail.Stop">
+            <summary>
+            Para el Módulo de  EMAIL
+            No es necesario
+            </summary>
+        </member>
+        <member name="T:SpinPlatform.DataBase.SpinDataBase">
+            <summary>
+            Módulo para conexión con bases de datos a bajo nivel
+            <para>&#160;</para>
+            <para>Éste módulo realiza laconexión con una base de datos según los parámetros facilitados. Soporta los siguientes tipos de bases de datos:</para>
+            <para>Access, MySQL, ORACLE, SQLite, DB2 y SQL Server. </para>
+            <para>Para su uso es necesario realizar un "Init" para la configuración del módulo, un "Start" para abrir la conexión con la base de datos,</para>
+            <para>Un Set o Get para recibir o enviar datos (a través de consultas preparadas anteriormente) y finalizamos la conexión con un "Stop". </para>
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.DataBase.SpinDataBase.Init(System.Object)">
+            <summary>
+            Se encarga de guardar en las variables internas de la clase los parámentros necesarios para laconexión con la base de datos
+            En concreto el objetoinitData de entrada debe disponer de los siguientes campos:
+            (OBLIGATORIO)DBProvider: nombre del componente software encargado de interactuar entre el OLEDB y la base de datos
+            (OBLIGATORIO)DBDefaultTableName: nombre de la tabla sobre la que se realizarán consultas
+            (OPCIONAL) DBDbType: tipo de base de datos a la que se accede (MYSql, SQL Server, ORACLE, DB2, SQLite o Access)
+            (OBLIGATORIO)DBConnectionString: parámetros de conexión. nombre de la base de datos, localización, usuario y contraseña...
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.DataBase.SpinDataBase.Start">
+            <summary>
+            Se encarga de abrir la conexión con la base de datos objetivo
+            No necesita parámetros de entrada o salida
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.DataBase.SpinDataBase.GetData(System.Object@,System.String[])">
+            <summary>
+            Se encarga de realizar peticiones de consulta a la base de datos que esté abierta en ese momento
+            Campos necesarios:
+            (OBLIGATORIO)DBQuery: Petición preparada para ejecutar.
+            Si no lo tiene, no se ejecuta ninguna acción
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.DataBase.SpinDataBase.SetData(System.Object@,System.String[])">
+            <summary>
+            Se encarga de realizar peticiones de consulta a la base de datos que esté abierta en ese momento
+            Campos necesarios:
+            (OBLIGATORIO)DBQuery: Petición preparada para ejecutar.
+            Si no lo tiene, no se ejecuta ninguna acción
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.DataBase.SpinDataBase.Stop">
+            <summary>
+            Se encarga de cerrar la conexión con la base de datos objetivo
+            No necesita parámetros de entrada o salida
+            </summary>
+        </member>
+        <member name="T:SpinPlatform.CryptoHelpException">
+            <summary>
+            Clase preparada para encriptar y desencriptar archivos de una forma sencilla
+            ¿Cómo se usa?
+            CryptoHelp.EncryptFile(inFile, outFile, contraseña, null);
+            CryptoHelp.DecryptFile(inFile, outFile, contraseña, null);
+            </summary>
+        </member>
+        <member name="T:SpinPlatform.CryptoHelp">
+            <summary>
+            Summary description for CryptoHelp.
+            </summary>
+        </member>
+        <member name="F:SpinPlatform.CryptoHelp.FC_TAG">
+            <summary>
+            Tag to make sure this file is readable/decryptable by this class
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.CryptoHelp.CheckByteArrays(System.Byte[],System.Byte[])">
+            <summary>
+            Checks to see if two byte array are equal
+            </summary>
+            <param name="b1">the first byte array</param>
+            <param name="b2">the second byte array</param>
+            <returns>true if b1.Length == b2.Length and each byte in b1 is
+            equal to the corresponding byte in b2</returns>
+        </member>
+        <member name="M:SpinPlatform.CryptoHelp.CreateRijndael(System.String,System.Byte[])">
+            <summary>
+            Creates a Rijndael SymmetricAlgorithm for use in EncryptFile and DecryptFile
+            </summary>
+            <param name="password">the string to use as the password</param>
+            <param name="salt">the salt to use with the password</param>
+            <returns>A SymmetricAlgorithm for encrypting/decrypting with Rijndael</returns>
+        </member>
+        <member name="F:SpinPlatform.CryptoHelp.rand">
+            <summary>
+            Crypto Random number generator for use in EncryptFile
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.CryptoHelp.GenerateRandomBytes(System.Int32)">
+            <summary>
+            Generates a specified amount of random bytes
+            </summary>
+            <param name="count">the number of bytes to return</param>
+            <returns>a byte array of count size filled with random bytes</returns>
+        </member>
+        <member name="M:SpinPlatform.CryptoHelp.EncryptFile(System.String,System.String,System.String,SpinPlatform.CryptoProgressCallBack)">
+            <summary>
+            This takes an input file and encrypts it into the output file
+            </summary>
+            <param name="inFile">the file to encrypt</param>
+            <param name="outFile">the file to write the encrypted data to</param>
+            <param name="password">the password for use as the key</param>
+            <param name="callback">the method to call to notify of progress</param>
+        </member>
+        <member name="M:SpinPlatform.CryptoHelp.DecryptFile(System.String,System.String,System.String,SpinPlatform.CryptoProgressCallBack)">
+            <summary>
+            takes an input file and decrypts it to the output file
+            </summary>
+            <param name="inFile">the file to decrypt</param>
+            <param name="outFile">the to write the decrypted data to</param>
+            <param name="password">the password used as the key</param>
+            <param name="callback">the method to call to notify of progress</param>
+        </member>
+        <member name="T:SpinPlatform.CryptoProgressCallBack">
+            <summary>
+            CallBack delegate for progress notification
+            </summary>
+        </member>
+        <member name="T:SpinPlatform.IO.SpinIODB">
+            <summary>
+            Módulo de entrada y salida de datos con BD
+            <para>&#160;</para>
+            <para>Este módulo es el encargado de montar las consultas a la base de datos a laque accederáa través del módulo DataBase correspondiente</para>
+            <para>&#160;</para>
+            <remarks>
+            <para>GETDATA params:</para>
+            <para>"Get" - Obtiene los datos \n</para>
+            <para>&#160;</para>
+            <para>SETDATA params:</para>
+            <para>"Set" - Guarda una nueva línea en la base de datos \n</para>
+            </remarks>
+            <para>&#160;</para>
+            <para>NOTA: Para su uso es necesario realizar un "Init" para la configuración del módulo, un "Start" para abrir la conexión con la base de datos,</para>
+            <para>Un Set o Get para recibir o enviar datos (a través de consultas genéricas) y finalizamos la conexión con un "Stop". </para>
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIODB.Init(System.Object)">
+            <summary>
+            Inicializa el Modulo de Bases de Datos.
+            </summary>
+            <param name="obj">
+            Campos Obligatorios:  \n
+            DBProvider (string) \n
+            DBType (string) \n
+            DBConnectionString (string) \n
+            DBDefaultTableName (string) \n
+            DBQueryType (string) \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIODB.Start">
+            <summary>
+            Arranca el Modulo de Basesde datos
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIODB.GetData(System.Object@,System.String[])">
+            <summary>
+            Realiza lecturas en la base de datos \n
+            </summary>
+            <param name="obj">
+            Variable dinamica donde guardar los resultados: \n
+            Response (List(string)) Lista de mensajes obtenidos \n
+            </param>
+            <param name="parameters">
+            "Get" - Obtiene los datos \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIODB.SetData(System.Object@,System.String[])">
+            <summary>
+            Realiza escrituras en la base de datos preparando las queries \n
+            </summary>
+            <param name="obj">
+            Variable dinamica de donde obtener los datos a establecer \n
+            Message (List(string)) Lista de mensajes a guardar \n
+            </param>
+            <param name="parameters">
+            "Set" - Guarda una nueva línea en la base de datos \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIODB.Stop">
+            <summary>
+            Para el Módulo de Bases de Datos
+            </summary>
+        </member>
+        <member name="T:SpinPlatform.IO.SpinIOXML">
+            <summary>
+            Módulo para el trabajo con archivos de XML
+            <para>&#160;</para>
+            <para>Métodos Init, Start y Stop (Sin implementar)</para>
+            <para>&#160;</para>
+            <remarks>
+            <para>GETDATA params:</para>
+            <para>"Get" - Obtiene el objeto específico \n</para>
+            <para>&#160;</para>
+            <para>SETDATA params:</para>
+            <para> "GenerarXML" - Generar el texto en XML \n</para>
+            </remarks>
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIOXML.Init(System.Object)">
+            <summary>
+            Módulo para el trabajo con archivos de XML
+            Método sin implementar (no es necesario)
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIOXML.Start">
+            <summary>
+            Módulo para el trabajo con archivos de XML
+            Método sin implementar (no es necesario)
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIOXML.GetData(System.Object@,System.String[])">
+            <summary>
+            Obtiene objeto dynamic de un XML. 
+            </summary>
+            <param name="data">
+            Variable dinamica donde guardar los resultados: \n
+            IOXMLPath (string) - path desde donde leer 
+            IOXMLStructureType (type) - tipo de objeto a deserializar.Por regla general dynamic o ExpandoObject.
+            </param>
+            <param name="parameters">
+            "Get" - Obtiene el objeto específico \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIOXML.SetData(System.Object@,System.String[])">
+            <summary>
+            Guarda objeto de cualquier tipo a archivo XML \n
+            </summary>
+            <param name="Data">
+            Variable dinamica de donde obtener los datos a guardar en el XML \n
+            IOXMLPath (string) Ruta del archivo a generar \n
+            Guarda el objeto completo "Data" ignorando el nodo "IOXMLPath"
+            </param>
+            <param name="parameters">
+            "GenerarXML" - Generar el texto en XML \n
+            "GenerarXMLConAlt" - Generar el texto en XML con etiquetas Alt y Type \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.IO.SpinIOXML.Stop">
+            <summary>
+            Módulo para el trabajo con archivos de XML
+            Método sin implementar (no es necesario)
+            </summary>
+        </member>
+        <member name="T:SpinPlatform.Log.SpinLog">
+            <summary>
+            Módulo para LOGS a archivos TXT o BASESDEDATOS (No implementa rotate)
+            <para>&#160;</para>
+            <para>Guarda cada entrada con un TIMESTAMP</para>
+            <para>Éste módulo realiza la escritura a un LOG o varios de las trazas que vayamos poniendo en nuestro código.</para>
+            <para>Todas trazas con un nivel superior al indicado como el de la aplicación en el fichero de configuración se escribirán.El resto se desechan</para>
+            <para>&#160;</para>
+            <remarks>
+            <para>GETDATA params:</para>
+            <para>"LOGGetLastMessage" - Obtiene el último mensaje de log almacenado \n</para>
+            <para>"LOGGetAllMessages"  - Obtiene todos los mensajes de log almacenados \n</para>
+            <para>&#160;</para>
+            <para>SETDATA params:</para>
+            <para>"WriteLine" - Guarda una nueva línea en el log \n</para>
+            </remarks>
+            <para>&#160;</para>
+            <para>NOTA: Para su uso solo es necesario realizar un "Init" de configuración. </para>
+            <para>Posteriormente usaremos el log como : nombreModulo.SetData("Frase a escribir","WriteLine");</para>
+            <para>No es necesario el uso del método Start ni Stop (Sin implementar)</para>
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.Log.SpinLog.Init(System.Object)">
+            <summary>
+            Inicializa el Modulo LOG.
+            Importante, el objeto que se envía "obj"debe incluir además de las variables de configuración de éste módulo,
+            las del módulo subsiguiente que se usará para la escritura a fichero.Esto es texto-> IOTXT o bd-> DataBase
+            </summary>
+            <param name="obj">
+            Campos Obligatorios:  \n
+            Log.LOGModuleObjetive (string) \n
+            Log.LOGAplicationTraceLevel (int) \n
+            Log.LOGElementTraceLevel (int) \n
+            Parámetros del módulo subsiguiente: texto-> IOTXT o bd-> DataBase
+            </param>
+        </member>
+        <member name="M:SpinPlatform.Log.SpinLog.GetData(System.Object@,System.String[])">
+            <summary>
+            Obtiene datos del Modulo Log. 
+            </summary>
+            <param name="data">
+            Variable dinamica donde guardar los resultados: \n
+            LOGLastLog (List(string)) resultados de "IOGetLastMessage" \n
+            LOGAllLog (List(string)) resultados de "IOGetAllMessages" \n
+            </param>
+            <param name="parameters">
+            "LOGGetLastMessage" - Obtiene el último mensaje de log almacenado \n
+            "LOGGetAllMessages"  - Obtiene todos los mensajes de log almacenados \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.Log.SpinLog.SetData(System.Object@,System.String[])">
+            <summary>
+            Guarda datos del módulo Log \n
+            </summary>
+            <param name="data">
+            Variable dinamica de donde obtener los datos a establecer \n
+            Message (List(string)) Lista de mensajes de log a guardar \n
+            </param>
+            <param name="parameters">
+            "WriteLine" - Guarda una nueva línea en el log \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.Log.SpinLog.Start">
+            <summary>
+            No es necesario su uso
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.Log.SpinLog.Stop">
+            <summary>
+            No es necesario su uso
+            </summary>
+        </member>
+        <member name="T:SpinPlatform.Log.SpinLogFile">
+            <summary>
+            Módulo para LOGS a archivo txt
+            <para>&#160;</para>
+            <para>Éste módulo realiza la escritura a un LOG o varios de las trazas que vayamos poniendo en nuestro código.</para>
+            <para>Guarda cada entrada con un TIMESTAMP</para>
+            <para>Existen tres niveles de trazas Desarrollo, Errores e Información que podrán o no escribirse al log en función de los parámetros
+            del fichero de configuración.</para>
+            <para>&#160;</para>
+            <remarks>
+            <para>SETDATA params:</para>
+            <para>"Error" - Guarda una nueva línea en el log de tipo Error si la configuración del módulo lo permite \n</para>
+            <para>"Desarrollo" - Guarda una nueva línea en el log de tipo desarrollo si la configuración del módulo lo permite \n</para>
+            <para>"Informacion" - Guarda una nueva línea en el log de tipo información si la configuración del módulo lo permite \n</para>
+            </remarks>
+            <para>&#160;</para>
+            <para>NOTA: Para su uso solo es necesario realizar un "Init" de configuración y un "Start" para rotar hasta 9 ficheros logs. </para>
+            <para>Posteriormente usaremos el log como : nombreModulo.SetData("Frase a escribir","Desarrollo"); y cerraremos con un "Stop" al terminar si nos lo permite la aplicación (No es estrictamente necesario).</para>
+            <para>No es necesario el uso del método GetData (Sin implementar)</para>
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.Log.SpinLogFile.Init(System.Object)">
+            <summary>
+            Inicializa el Modulo LOG. \n
+            Se le puede enviar en el init como parámetro tanto el objeto completo de configuración con el nombre genérico (LOGTXT) como el módulo LOG directamente con cualquier nombre. 
+            </summary>
+            <param name="obj">
+            Campos Obligatorios:  \n
+            LOGTXTTraceLevel (string) \n
+            LOGTXTMaxFileSize (int) \n
+            LOGTXTFilePath (string) \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.Log.SpinLogFile.GetData(System.Object@,System.String[])">
+            <summary>
+            Sin implementar 
+            </summary>
+            <param name="data">
+            Sin implementar
+            </param>
+            <param name="parameters">
+            Sin implementar
+            </param>
+        </member>
+        <member name="M:SpinPlatform.Log.SpinLogFile.SetData(System.Object@,System.String[])">
+            <summary>
+            Guarda datos del módulo Log \n
+            </summary>
+            <param name="data">
+            Variable dinamica de donde obtener los datos a establecer \n
+            LOGTXTMessage (string) mensaje de log a guardar \n
+            </param>
+            <param name="parameters">
+            "Error" - Guarda una nueva línea en el log de tipo Error si la configuración del módulo lo permite \n
+            "Desarrollo" - Guarda una nueva línea en el log de tipo desarrollo si la configuración del módulo lo permite \n
+            "Informacion" - Guarda una nueva línea en el log de tipo información si la configuración del módulo lo permite \n
+            </param>
+        </member>
+        <member name="M:SpinPlatform.Log.SpinLogFile.Start">
+            <summary>
+            Realiza un rotate para el fichero proporcionado 
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.Log.SpinLogFile.Stop">
+            <summary>
+            Cierra todos los streamwriters abiertos por el módulo 
+            </summary>
+        </member>
+        <member name="T:SpinPlatform.FTP.SpinFTP">
+            <summary>
+            FTP module
+            <para>&#160;</para>
+            <para>This module has the next functionalities: Check directory existence, create directory or upload file.</para>
+            <para>&#160;</para>
+            <remarks>
+            <para>"DirectoryExists" - Comprueba la existencia del Directorio, necesita parámetro FTPPathDirectorio (string) \n</para>
+            <para>SETDATA params:</para>
+            <para>"SubirArchivo" - Sube un archivo al servidor FTP \n</para>
+            <para>"CrearDirectorio" - Crear una nueva carpeta en el servidor FTP \n</para>
+            </remarks>
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.Connect(System.String,System.String,System.String,System.Int32)">
+            <summary>
+            Starts FTP module. Stablish the connection between server and client.
+            </summary>
+            <param name="FTPRemoteHost">IP address of the host (with port if it is different to 21), Example:'168.192.0.1:20'</param>
+            <param name="User">User name</param>
+            <param name="Password">Password for the FTP connection</param>
+            <param name="ConnectionTries">Number of times client will try to connect to the server</param>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.Connect(System.String,System.String,System.String)">
+            <summary>
+            Starts FTP module. Stablish the connection between server and client. It retries the connection 3 times.
+            </summary>
+            <param name="FTPRemoteHost">IP address of the host (with port if it is different to 21), Example:'168.192.0.1:20'</param>
+            <param name="User">User name</param>
+            <param name="Password">Password for the FTP connection</param>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.Start">
+            <summary>
+            Opens FTP connection once it is stablished, first needs a Connect() call
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.Stop">
+            <summary>
+            Closes FTP connection
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.DirectoryExists(System.String)">
+            <summary>
+            Checks the existence of a path in the host.
+            
+            </summary>
+            <param name="path">Directory to check existence of. You can enter both a simple folder or a path of folders. For example:
+            "folder",
+            "folder\",
+            "folder1\folder2",
+            "folder1\folder2\"</param>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.GetCurrentDirectory">
+            <summary>
+            Server pointing folder
+            </summary>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.SetCurrentDirectory(System.String)">
+            <summary>
+            Makes the server point to this folder (path)
+            </summary>
+            <param name="path">Directory to make the server point to.You can enter both a simple folder or a path of folders. For example:
+            "folder",
+            "folder\",
+            "folder1\folder2",
+            "folder1\folder2\"</param>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.CreateNewDirectory(System.String)">
+            <summary>
+            Creates a new folder 
+            </summary>
+            <param name="name">Name of the desired folder or path of folders. You can enter both a simple folder or a path of folders. For example:
+            "folder",
+            "folder\",
+            "folder1\folder2",
+            "folder1\folder2\"</param>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.UploadFile(System.String,System.String)">
+            <summary>
+            Uploads new file to server 
+            </summary>
+            <param name="localPath">Local file path to upload, for example: "C:\folder\file.extension"</param>
+            <param name="remotePath">Upload directory.You can enter both a simple folder or a path of folders. For example:
+            "folder",
+            "folder\",
+            "folder1\folder2",
+            "folder1\folder2\"</param>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.UploadFile(System.String)">
+            <summary>
+            Uploads new file to server. It willbe uploaded to the current server directory 
+            </summary>
+            <param name="localPath">Local file path to upload, for example: "C:\folder\file.extension"</param>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.UploadFile(System.String,System.Boolean)">
+            <summary>
+            Uploads new file to server. It willbe uploaded to the current server directory 
+            </summary>
+            <param name="localPath">Local file path to upload, for example: "C:\folder\file.extension"</param>
+            <returns>null if the upload was successfull, otherway it returns the localpath to the file</returns>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.UploadFolderFiles(System.String)">
+            <summary>
+            Uploads all files in a folder and subfolders to the server. It will be uploaded to the current server directory. Simultaneous upload up to 5 files by default. 
+            </summary>
+            <param name="localPath">Local file path to upload, for example: "C:\folder\"</param>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.UploadFolderFiles(System.String,System.String)">
+            <summary>
+            Uploads all files in a folder and subfolders to the server. Simultaneous upload up to 5 files by default.
+            </summary>
+            <param name="localPath">Local file path to upload, for example: "C:\folder\"</param>
+            <param name="remotePath">Upload directory.You can enter both a simple folder or a path of folders. For example:
+            "folder",
+            "folder\",
+            "folder1\folder2",
+            "folder1\folder2\"</param>
+        </member>
+        <member name="M:SpinPlatform.FTP.SpinFTP.UploadFolderFiles(System.String,System.String,System.Int32)">
+            <summary>
+            Uploads all files in a folder and subfolders to the server.
+            </summary>
+            <param name="localPath">Local file path to upload, for example: "C:\folder\"</param>
+            <param name="remotePath">Upload directory.You can enter both a simple folder or a path of folders. For example:
+            "folder",
+            "folder\",
+            "folder1\folder2",
+            "folder1\folder2\"</param>
+            <param name="simultaneousUploads">Number of files to upload simultaneously if required. Default=5</param>
+        </member>
+    </members>
+</doc>
