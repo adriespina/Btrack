@@ -229,6 +229,12 @@ namespace Billetrack
             timer_State.Enabled = false;
           //  _cMain.Dispose();
             dispatch.Stop();
+
+            if (panel1.Controls.Contains(_cMatchingOffline))
+            {
+                _cMatchingOffline.match.classificator.Dispose();
+            
+            }
         }
         
         #endregion

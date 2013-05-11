@@ -16,7 +16,7 @@ using System.Threading;
 
 namespace Billetrack
 {
-    class resultMatching
+    public class resultMatching
     {
         public float quality;
         public float quality_surf;

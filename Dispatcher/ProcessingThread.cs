@@ -21,7 +21,7 @@ using SpinPlatform.Errors;
 namespace Billetrack
 {
     class ProcessingThread : SpinThreadEvent
-    {
+    { 
         BilletrackDispatcher _Padre;
         dynamic _Parametros;
         string path_image, total_path, path_image_original, total_path_orig, path_sinimagen;
@@ -243,6 +243,7 @@ namespace Billetrack
         }
         public override void Closing()
         {
+            match.classificator.Dispose();
 
         }
 

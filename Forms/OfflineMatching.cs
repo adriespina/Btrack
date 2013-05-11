@@ -23,6 +23,7 @@ namespace Billetrack.Forms
         string pathacer, pathalam;
         Bitmap _cambioImagen = null;
         public bool _running = false;
+       public  CMatching match;
         #endregion
 
         public OfflineMatching()
@@ -109,7 +110,7 @@ namespace Billetrack.Forms
                 Stopwatch watch;
                 long matchTime;
                 int position_max = -1, it = 0;
-                CMatching match = new CMatching(8);
+                match = new CMatching(8);
                 resultMatching[] resultados = new resultMatching[ImagenesAceriavector.Length];
                 CMetodosAuxiliares aux = new CMetodosAuxiliares();
                 int matched = 0, matched_ok = 0;

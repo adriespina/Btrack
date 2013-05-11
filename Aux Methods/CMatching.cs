@@ -31,7 +31,7 @@ namespace Billetrack
 
         }
     }
-    class CMatching
+   public  class CMatching
     {
         public  int MAX_N_IMAGES_IN_FOLDER = 200;
         
@@ -41,7 +41,7 @@ namespace Billetrack
         public bool DOUBLE_CHECK = true;
 
         int m_numberOfThreads;
-        CClassification classificator;
+        public CClassification classificator;
 
         public int NumberOfThreads
         {
@@ -67,7 +67,7 @@ namespace Billetrack
 
      public CMatching(int threads)
      {
-         m_numberOfThreads = threads;
+         NumberOfThreads = threads;
 
          try
          {
@@ -152,6 +152,7 @@ namespace Billetrack
             //cerramos el pool y copiamos los resultados obtenidos
             smartThreadPool.Shutdown();
             pResult = pResult2;
+            classificator.InsertMatch(pResult);
 
             //Buscamos la mejor correspodencia y enviamos el indice 
             int indice_max_quality = -1, indice_max_matches = -2, indice_max_inside = -3, it = 0;
