@@ -33,7 +33,7 @@ namespace Billetrack
     }
    public  class CMatching
     {
-        public  int MAX_N_IMAGES_IN_FOLDER = 200;
+        public  int MAX_N_IMAGES_IN_FOLDER = 200; 
         
         public  int THRESHOLD_QUALITY = 30;
         public  int THRESHOLD_INSIDE = 30;//50
@@ -104,7 +104,18 @@ namespace Billetrack
             }
 
 
-           
+            //OPCION1 HACERLO CON UN WAIT ANY
+
+            //        int contador=0;
+            //        while (contador<filenameMatrixObjects.Length)
+            //{
+            //         SmartThreadPool.WaitAny(tareas, MATCHING_TIMEOUT, false);
+            //         contador++;
+            //}
+            //        for (int i = 0; i < pResult2.Length; i++)
+            //        {
+            //            pResult2[i] = (resultMatching)tareas[i].Result;
+            //        }
 
 
             //OPCION 2 HACERLO CON UN WAIT ALL

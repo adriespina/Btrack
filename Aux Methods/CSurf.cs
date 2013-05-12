@@ -33,6 +33,7 @@ namespace Billetrack
         public bool bHomographyOK;
         public int npoints_Homography;
         public int npoints_Homography_inside;
+        public int npoints_included_homography;
         public bool bFailToCalculate;		///< The object could no calculated because there was no image,keypoints and descriptors
 
         public resultMatching()
@@ -260,7 +261,8 @@ namespace Billetrack
         Image<Gray, byte> m_image;     
         configurationSurf m_config;       
         bool m_bIsInitiated;
-        System.Threading.Mutex  locker1, locker2, locker3, locker4; 
+        System.Threading.Mutex  locker1, locker2, locker3, locker4;
+        int m_point_included_homography;
 
         //metodos privados
 
@@ -281,6 +283,7 @@ namespace Billetrack
             m_pPairsInside = new List<int>();
             m_pPairsBelongHomography = new List<int>();
             m_bIsInitiated = false;
+            m_point_included_homography = 0;
 
 
             m_config = new configurationSurf();
@@ -891,7 +894,7 @@ namespace Billetrack
 
             m_resultMatching.npoints_Homography = m_pPairsBelongHomography.Count / 2;
             m_resultMatching.npoints_Homography_inside = cuentaInsideHomography;
-
+            m_resultMatching.npoints_included_homography = m_point_included_homography;
             int tmpcuenta2 = 0;
             for (int i = 0; i < 4; i++)
             {
@@ -912,11 +915,10 @@ namespace Billetrack
 
 
             if (m_pPairs.Count != 0)
-                MatchingQuality = (float)cuenta / (float)m_pPairs.Count() * 2.0 * 100;
+                MatchingQuality = ((float)(cuenta * 2.0) / (float)m_pPairs.Count())  * 100;
             else
                 MatchingQuality = 0.0;
-
-
+          
             m_resultMatching.common_KeyPoints = (int)m_pPairs.Count / 2;
             m_resultMatching.inside_KeyPoints = cuenta;
             m_resultMatching.quality = (float)MatchingQuality;
@@ -1013,6 +1015,8 @@ namespace Billetrack
                 if (!CvInvoke.cvFindHomography(pt1.Ptr, pt2.Ptr, m_MatrixHomographyMat.Ptr, HOMOGRAPHY_METHOD.RANSAC, MARGEN_PIXELS, mask.Ptr))
                     return false;
                 int nonZeroCount = CvInvoke.cvCountNonZero(mask);
+                m_point_included_homography = nonZeroCount;
+
                 if (nonZeroCount < 5)
                     return false;
                 for (i = 0; i < 4; i++)

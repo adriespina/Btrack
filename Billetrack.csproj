@@ -127,6 +127,12 @@
     <Compile Include="Dispatcher\FormBilletrack.Designer.cs">
       <DependentUpon>FormBilletrack.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\ClassificationTrainning.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\ClassificationTrainning.Designer.cs">
+      <DependentUpon>ClassificationTrainning.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\Imagen.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -175,6 +181,9 @@
     </Compile>
     <EmbeddedResource Include="Dispatcher\FormBilletrack.resx">
       <DependentUpon>FormBilletrack.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ClassificationTrainning.resx">
+      <DependentUpon>ClassificationTrainning.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\Imagen.resx">
       <DependentUpon>Imagen.cs</DependentUpon>

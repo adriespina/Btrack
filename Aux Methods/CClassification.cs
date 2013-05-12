@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using SpinPlatform.Errors;
 using Microsoft.Office.Interop.Excel;
+using System.Reflection;
 
 
 namespace Billetrack
@@ -39,18 +40,32 @@ namespace Billetrack
             {
                   lastUsedRow = OpenXLS();
                 int initialrow = lastUsedRow;
+                int contador = 0;
 
                 foreach (resultMatching rst in results)
                 {
-                    lastUsedRow++;
-                    xlWorkSheet.Cells[lastUsedRow, 1] = 0;
-                    xlWorkSheet.Cells[lastUsedRow, 2] = rst.common_KeyPoints.ToString();
-                    xlWorkSheet.Cells[lastUsedRow, 3] = rst.inside_KeyPoints.ToString();
-                    xlWorkSheet.Cells[lastUsedRow, 4] = rst.quality.ToString();
-                    xlWorkSheet.Cells[lastUsedRow, 5] = rst.total_KeyPoints.ToString();
-                    xlWorkSheet.Cells[lastUsedRow, 6] = rst.total_other_keyPoints.ToString();
+                    contador++;
+                    if (rst.common_KeyPoints!=0)
+                    {
+                        lastUsedRow++;
+                        if (contador==index+1) 
+                            xlWorkSheet.Cells[lastUsedRow, 1] ="MATCH";
+                        else xlWorkSheet.Cells[lastUsedRow, 1] = "0";
+                        xlWorkSheet.Cells[lastUsedRow, 2] = rst.quality.ToString("F0");
+                        xlWorkSheet.Cells[lastUsedRow, 3] = rst.npoints_included_homography.ToString();  
+                        xlWorkSheet.Cells[lastUsedRow, 4] = rst.common_KeyPoints.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 5] = rst.inside_KeyPoints.ToString();                       
+                        xlWorkSheet.Cells[lastUsedRow, 6] = rst.total_KeyPoints.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 7] = rst.total_other_keyPoints.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 8] = rst.bHomographyOK.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 9] = rst.bdst_corners_inside.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 10] = rst.npoints_Homography.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 11] = rst.npoints_Homography_inside.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 12] = rst.bdst_corners_local_inside.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 13] = rst.npoints_included_homography.ToString();                         
+                    }
                 }
-               if(index>0) xlWorkSheet.Cells[initialrow+index+1, 1] = 1;
+              
                CloseSaveXLSX();
             }
             catch (Exception e)
@@ -105,6 +120,23 @@ namespace Billetrack
                 lastUsedRow = last.Row;
             }
             return lastUsedRow;
+        }
+
+        int FindValueinColumns(string value, string column)
+        {
+            int columna = 0;
+          
+            lastUsedRow = OpenXLS();
+
+            Range rangocolumna = xlWorkSheet.get_Range(column + "1");
+           Range rangoencontrado= rangocolumna.Find(value,Missing.Value, Missing.Value,Excel.XlLookAt.xlWhole, Missing.Value,Excel.XlSearchDirection.xlNext,Missing.Value, Missing.Value, Missing.Value);
+           string direccion= rangoencontrado.get_Address();
+
+
+            CloseSaveXLSX();
+
+            return columna;
+        
         }
 
             #region dispose
