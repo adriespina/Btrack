@@ -437,7 +437,7 @@ namespace Billetrack
                throw new SpinPlatform.Errors.SpinException("CMatching: MatchingOneToVarius : " + e.Message);
             }
         }
-     public int MatchingOneToVarius2(string filename, ref string[] filenameMatrixObjects, out resultMatching[] pResult)
+     public int MatchingOneToVarius2(string filename, string[] filenameMatrixObjects, out resultMatching[] pResult)
      {
 
 
@@ -470,6 +470,7 @@ namespace Billetrack
                 {
                      modelos[i] = new CSurf(surf_image);
                  }
+                surf_image.Dispose();
              }
              catch (Exception err)
              {
@@ -531,12 +532,19 @@ namespace Billetrack
              //cerramos el pool y copiamos los resultados obtenidos
              smartThreadPool.Shutdown();
              pResult = pResult2;
+             
+             //borramos los descriptores usados si no los vamos a usar mas
+            
              if (!DOUBLE_CHECK)
-             {
+             { 
+                 
                  for (int i = 0; i < modelos.Length; i++)
                  {
-                     modelos[i].Clean();
+                       modelos[i].Dispose();
+                       pResult2[i].Dispose();
+                     
                  }
+                 
              }
 
 
@@ -633,10 +641,13 @@ namespace Billetrack
                      //cerramos el pool y copiamos los resultados obtenidos
                      smartThreadPool.Shutdown();
                      pResult = pResult2;
-
+                     //borramos los descriptores usados
+             
                      for (int i = 0; i < modelos.Length; i++)
                      {
-                         modelos[i].Clean();
+              
+                         modelos[i].Dispose();
+                         pResult2[i].Dispose();
                      }
 
                      indice_max_quality = -1; indice_max_quality = -1; indice_max_matches = -2; indice_max_inside = -3; it = 0;
@@ -851,8 +862,8 @@ namespace Billetrack
                     results.dst_corners[i] = corners1[i];
 
                 }
-                ///BUG hay que borrar tb el model???
-                surf_object.Clean();
+               
+                surf_object.Dispose();
               
                 return results;
             }
