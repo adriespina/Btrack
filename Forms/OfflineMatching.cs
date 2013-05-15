@@ -148,8 +148,8 @@ namespace Billetrack.Forms
                         }
                     }
 
-                    position_max = match.MatchingOneToVarius(path_recortada, ref ImagenesAceriavector, out resultados);
-                    classificator.InsertSetMatches(resultados, position_max);
+                    position_max = match.MatchingOneToVarius2(path_recortada, ref ImagenesAceriavector, out resultados);
+                   // classificator.InsertSetMatches(resultados, position_max);
 
                     watch.Stop();
 

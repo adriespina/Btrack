@@ -235,7 +235,7 @@ namespace Billetrack
     }
 
 
-    class CSurf : IDisposable
+   public  class CSurf : IDisposable
     {
 
         public const int MARGEN_PIXELS = 10;
@@ -268,7 +268,7 @@ namespace Billetrack
         Image<Gray, byte> m_image;     
         configurationSurf m_config;       
         bool m_bIsInitiated;
-        System.Threading.Mutex  locker1, locker2, locker3, locker4;
+        //System.Threading.Mutex  locker1, locker2, locker3, locker4;
         int m_point_included_homography;
 
         //metodos privados
@@ -304,10 +304,10 @@ namespace Billetrack
                 m_MatrixHomographyMat = new HomographyMatrix();
                 m_resultMatching = new resultMatching();
 
-                locker1 = new System.Threading.Mutex();
-                locker2 = new System.Threading.Mutex();
-                locker3 = new System.Threading.Mutex();
-                locker4 = new System.Threading.Mutex();
+                //locker1 = new System.Threading.Mutex();
+                //locker2 = new System.Threading.Mutex();
+                //locker3 = new System.Threading.Mutex();
+                //locker4 = new System.Threading.Mutex();
 
 
 
@@ -446,6 +446,51 @@ namespace Billetrack
             {
                throw new SpinPlatform.Errors.SpinException("CSurf: CSurf(Constructor) : " + e.Message);
             }
+        }
+        public CSurf(CSurf otro)
+        {
+            try
+            {
+                m_pKeyPoints = new VectorOfKeyPoint();
+                MKeyPoint[] vector = new MKeyPoint[otro.m_pKeyPoints.ToArray().Length];
+                otro.m_pKeyPoints.ToArray().CopyTo(vector, 0);
+                m_pKeyPoints.Push(vector);
+                m_pDescriptors = new Matrix<float>(otro.m_pDescriptors.Rows, otro.m_pDescriptors.Cols);
+                m_pDescriptors.Data = otro.m_pDescriptors.Data;
+
+
+                surfCPU = null;
+
+                m_src_corners = otro.m_src_corners;
+                m_pPairs = new List<int>();
+                m_pDist = new List<float>();
+                m_pPairs.Clear();
+                m_pDist.Clear();
+                m_pPairsInside = new List<int>();
+                m_pPairsBelongHomography = new List<int>();
+                m_bIsInitiated = false;
+                m_point_included_homography = 0;
+
+                m_config = new configurationSurf();
+                m_config.hessianThreshold = otro.m_config.hessianThreshold;
+                m_config.ignoreBlackPoints = true;
+                m_config.removeBlackPoints = true;
+
+                m_params = otro.m_params;
+                m_MatrixHomographyMat = new HomographyMatrix();
+                m_resultMatching = new resultMatching();
+
+                //locker1 = new System.Threading.Mutex();
+                //locker2 = new System.Threading.Mutex();
+                //locker3 = new System.Threading.Mutex();
+                //locker4 = new System.Threading.Mutex();
+            }
+            catch (Exception e)
+            {
+
+                throw new SpinPlatform.Errors.SpinException("CSurf: Cloning CSurf : " + e.Message);
+            }
+
         }
         public void InitFromImg(Image<Gray, byte> image, double hessianThreshold = DEFAUL_HESSIANTHRESHOLD)
         {
@@ -589,13 +634,13 @@ namespace Billetrack
             // Open the saved histogram
            
                
-                locker1.WaitOne();
+                //locker1.WaitOne();
                       // serialize histogram
                       stream = File.Open(filename, FileMode.Create);
                       bformatter = new BinaryFormatter();
                       bformatter.Serialize(stream, m_pDescriptors);
                       stream.Close();
-                      locker1.ReleaseMutex();
+                      //locker1.ReleaseMutex();
                  
                 return true;
             }
@@ -617,13 +662,13 @@ namespace Billetrack
             BinaryFormatter bformatter;
             // Open the saved histogram
             
-                locker2.WaitOne();
+                //locker2.WaitOne();
                       // serialize histogram
                       stream = File.Open(filename, FileMode.Create);
                       bformatter = new BinaryFormatter();
                       bformatter.Serialize(stream, m_pKeyPoints);
                       stream.Close();
-                      locker2.ReleaseMutex();
+                      //locker2.ReleaseMutex();
                 return true;
             }
             catch (Exception e)
@@ -782,12 +827,12 @@ try
            
                 if (File.Exists(filename))
                 {  
-                    locker3.WaitOne();
+                    //locker3.WaitOne();
                         stream = File.Open(filename, FileMode.Open);
                         bformatter = new BinaryFormatter();
                         m_pDescriptors = (Matrix<float>)bformatter.Deserialize(stream);
                         stream.Close(); 
-                 locker3.ReleaseMutex();
+                 //locker3.ReleaseMutex();
                   
                 }
                 return true;
@@ -808,12 +853,12 @@ try
             
                 if (File.Exists(filename))
                 {
-                     locker4.WaitOne();
+                     //locker4.WaitOne();
                         stream = File.Open(filename, FileMode.Open);
                         bformatter = new BinaryFormatter();
                         m_pKeyPoints = (VectorOfKeyPoint)bformatter.Deserialize(stream);
                         stream.Close();
-                        locker4.ReleaseMutex();
+                        //locker4.ReleaseMutex();
                     return true;
                 }
                 else return false;
@@ -1222,11 +1267,7 @@ try
               throw new SpinPlatform.Errors.SpinException("CSurf: IsInside : " + e.Message);
             }
         }
-        public CSurf(CSurf otro)
-    {
-     
-    
-    }
+      
 
                  #region dispose
 
