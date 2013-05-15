@@ -143,34 +143,10 @@ namespace Billetrack
                                 else _cConFTP.StatusConnection = SpinPlatform.Controls.spinConnectionStatus.disconnected;
                                 if (Estado.Camera) _cConCamera.StatusConnection = SpinPlatform.Controls.spinConnectionStatus.connected;
                                 else _cConCamera.StatusConnection = SpinPlatform.Controls.spinConnectionStatus.disconnected;
+                                _cConHardDrive.Text = Estado.Disk;
                                
                             }
-                            //BUG 
-                            try
-                            {
-                                ManagementObject disk = new ManagementObject("win32_logicaldisk.deviceid=\"c:\"");
-                                disk.Get();
-                                if (double.Parse(disk["FreeSpace"].ToString()) / Math.Pow(1024, 3) > 1)
-                                    _cConHardDrive.Text = "HD = " + Math.Round(double.Parse(disk["FreeSpace"].ToString()) / Math.Pow(1024, 3), 2) + "GB";
-                                else if (double.Parse(disk["FreeSpace"].ToString()) / Math.Pow(1024, 2) > 1)
-                                    _cConHardDrive.Text = "HD = " + Math.Round(double.Parse(disk["FreeSpace"].ToString()) / Math.Pow(1024, 2), 2) + "MB";
-                                else if (double.Parse(disk["FreeSpace"].ToString()) / 1024 > 1)
-                                    _cConHardDrive.Text = "HD = " + Math.Round(double.Parse(disk["FreeSpace"].ToString()) / 1024, 2) + "KB";
-                                else
-                                    _cConHardDrive.Text = "HD = " + Math.Round(double.Parse(disk["FreeSpace"].ToString()), 2) + "Bytes";
 
-                                //if (cont_disk_space==0)
-                                //{
-                                //    if (double.Parse(disk["FreeSpace"].ToString()) / Math.Pow(1024, 3)<5)
-                                //    Free_Disk();
-                                //}
-                                //cont_disk_space++;
-                                disk.Dispose();
-                            }
-                            catch (Exception e)
-                            {
-
-                            }
                             break;
                         #endregion
                     }

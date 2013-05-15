@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Configuration>
 
-  <General alt=" ">
-    <!--<INSTALLATION_NAME1 alt=" " type="string">ALAMBRON1</INSTALLATION_NAME1>-->
-    <INSTALLATION_NAME alt=" " type="string">ALAMBRON1</INSTALLATION_NAME>
+  <General alt=" ">  
+    <INSTALLATION_NAME alt=" " type="string">ACERIA1</INSTALLATION_NAME>  <!--ALAMBRON1-->
+    <PERCENTAGE_MINIMUM_DISK_AVAILABLE alt=" " type="int">80</PERCENTAGE_MINIMUM_DISK_AVAILABLE>    
   </General>
   <Match alt=" ">
     <THRESHOLD_QUALITY alt=" " type="int">30</THRESHOLD_QUALITY>
@@ -19,7 +19,7 @@
   </DataBase>
   <Camera alt=" ">
     <USING_CAMERA alt=" " type="bool">false</USING_CAMERA>
-    <PATH_IMAGE_SOURCE alt=" " type="string">C:\Users\Cesar\Desktop\Billetrack Adrian\datos\212119_alam\</PATH_IMAGE_SOURCE>
+    <PATH_IMAGE_SOURCE alt=" " type="string">C:\Users\Cesar\Desktop\Billetrack Adrian\datos\212119_acer\</PATH_IMAGE_SOURCE>
     <MIN_EXPOSURE alt=" " type="int">32</MIN_EXPOSURE>
     <MAX_EXPOSURE alt=" " type="int">66566</MAX_EXPOSURE>
     <MIN_FRAMERATE alt=" " type="int">100</MIN_FRAMERATE>
@@ -51,7 +51,7 @@
    <BILLET_SPOTLIGHT_MIN alt=" " type="int"> 10</BILLET_SPOTLIGHT_MIN>
    <BILLET_SPOTLIGHT_MAX alt=" " type="int"> 50</BILLET_SPOTLIGHT_MAX>
     
-   <BILLET_ROTATION_ANGLE alt=" " type="int">-54</BILLET_ROTATION_ANGLE><!-- -36 para la aceria --><!-- -54 para alambron -->
+   <BILLET_ROTATION_ANGLE alt=" " type="int">-36</BILLET_ROTATION_ANGLE><!-- -36 para la aceria --><!-- -54 para alambron -->
     <BILLET_ROTATION_NUMBER alt=" " type="int">5</BILLET_ROTATION_NUMBER>
     <BILLET_THRESHOLD_FOR_CROP alt=" " type="int">65</BILLET_THRESHOLD_FOR_CROP>
     <PATH_EXAMPLE_IMG alt=" " type="string">sample.jpg</PATH_EXAMPLE_IMG>

@@ -20,12 +20,13 @@ namespace Billetrack
         bool _Light;       
         bool _FTP;
         bool _Level2ClientAlive;
+        string _Disk;
        
 
 
         //descriptores de acceso
 
-     
+        public string Disk { get { return _Disk; } set { _Disk = value; } }
         public spinConnectionStatus Socket { get { return _Socket; } set { _Socket = value; } }   
         public bool RemoteDatabase { get { return _RemoteDatabase; } set { _RemoteDatabase = value; } }
         public bool Light {  get { return _Light; } set { _Light = value; } }

@@ -23,6 +23,7 @@ namespace Billetrack
        public  CMetodosAuxiliares _Aux;
        public  BilletrackDataBase _BilletrackDB;
        public SpinLogFile _Log, _LogError;
+       int _Percentage_minimum_disk_available = 10;
 
        Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
        {
@@ -76,10 +77,9 @@ namespace Billetrack
             _Aux.BILLET_ROTATION_ANGLE = _Configuracion.Detection.BILLET_ROTATION_ANGLE;
             _Aux.THRESHOLD_FOR_CROP = _Configuracion.Detection.BILLET_THRESHOLD_FOR_CROP;
             _Aux.NROTACIONES = _Configuracion.Detection.BILLET_ROTATION_NUMBER;
-
            
             _BilletrackDB = new BilletrackDataBase(this,_Configuracion.General.INSTALLATION_NAME, _Configuracion.DataBase.CONNECTION_STRING, _Configuracion.DataBase.DATABASE_DEBUG);
-           
+            _Percentage_minimum_disk_available = _Configuracion.General.PERCENTAGE_MINIMUM_DISK_AVAILABLE;
      
             // Hilos
 
@@ -155,7 +155,7 @@ namespace Billetrack
                         case "State":
                             Data.State = (State)((SharedData<State>)_DispatcherSharedMemory["State"]).Get(0);
                             ((PCComClientThread)_DispatcherThreads["Communication"])._server.GetData(ref Data, "EstadoSocket");
-                            if ((bool)Data.COMSocketDatosConnected )
+                            if ((bool)Data.COMSocketDatosConnected)
                             {
                                 ((State)(Data.State)).Socket = spinConnectionStatus.connected;
                             }
@@ -163,24 +163,29 @@ namespace Billetrack
                             {
                                 ((State)(Data.State)).Socket = spinConnectionStatus.disconnected;
                             }
+                            //hard Disk Info
+                            ((State)(Data.State)).Disk = GetHardDriveStatus();                     
                            
+
                             break;
                         case "MatchInfo":
                             Data.MatchedInfo = (Match)((SharedData<Match>)_DispatcherSharedMemory["MatchInformation"]).Get(0);
                             break;
-                        
+
                     }
                 }
                 Data.TRIErrors = "";
-            }
+            } 
             catch (Exception ex)
             {
 
                 Data.TRIErrors = ex.Message;
-                MessageBox.Show("error dispatcher : "+ex.Message);
+                MessageBox.Show("error dispatcher : " + ex.Message);
                 //Ademas se lanzaria la excepcion oportuna
             }
         }
+
+       
         public void PrepareEvent(string thread)
         {
             if (Status == SpinDispatcherStatus.Running)  // Por si nadie escucha el evento o esta en proceso de parar
@@ -234,6 +239,97 @@ namespace Billetrack
                 Data.MEPErrors = ex.Message;
                 //Ademas se lanzaria la excepcion oportuna
             }
+
+        }
+
+        private string GetHardDriveStatus()
+        {
+            string estado;
+            try
+            {
+                string path = _BilletrackDB.Factory.PathImages;
+                DriveInfo drive = new DriveInfo(path.Substring(0, 1));
+                if (drive.IsReady)
+                {
+                    long Available = drive.AvailableFreeSpace;
+                    long Total = drive.TotalSize;
+                    double percentage = (double)Available / (double)Total * 100;
+
+                    if (percentage < _Percentage_minimum_disk_available)
+                    {
+                        FreeDisk(path);
+                    }
+                    estado = "HD = " + (Available / (1024 * 1024 * 1024)).ToString("F1") + " GB - " + percentage.ToString("F1") + "% Available";
+                }
+                else
+                {
+                    AddLogError("La unidad " + path.Substring(0, 1) + " no está disponible en este momento");
+                    estado = "NO INFO";
+                }
+                return estado;
+
+
+
+            }
+            catch (Exception E)
+            {
+
+                AddLogError("Error in Disk Status" + E.Message);
+                return "NO INFO";
+            }
+        }
+
+        private void FreeDisk(string path)
+        {
+            try
+            {
+                if (path != null)
+                {
+                    System.IO.DirectoryInfo rootDir = new System.IO.DirectoryInfo(path);
+                    System.IO.DirectoryInfo[] factories = rootDir.GetDirectories();
+                    //recorro las instalaciones
+                    if (factories != null)
+                    {
+                        foreach (System.IO.DirectoryInfo factory in factories)
+                        {
+                            if (factory != null)
+                            {
+                                System.IO.DirectoryInfo oldestyear = OldestFolder(factory.GetDirectories());
+                                if (oldestyear != null)
+                                {
+                                    System.IO.DirectoryInfo oldestmonth = OldestFolder(oldestyear.GetDirectories());
+                                    if (oldestmonth != null)
+                                    {
+                                        oldestmonth.Delete(true);
+                                        AddLogInformation("deleting old files : "+oldestmonth.FullName);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+
+                AddLogError("Error deleting old files" + e.Message);
+            }
+        }
+
+        private DirectoryInfo OldestFolder(DirectoryInfo[] folders)
+        {
+            DateTime hoy = DateTime.Now;
+            System.IO.DirectoryInfo paraborrar = null;
+
+            foreach (System.IO.DirectoryInfo folder in folders)
+            {
+                if (folder.CreationTime < hoy)
+                {
+                    paraborrar = folder;
+                    hoy = folder.CreationTime;
+                }
+            }
+            return paraborrar;
 
         }
     }
