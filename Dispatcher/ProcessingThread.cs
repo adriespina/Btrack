@@ -40,7 +40,7 @@ namespace Billetrack
             _Padre = (BilletrackDispatcher)padre;
             _Parametros = parametros;
 
-            match = new CMatching(Environment.ProcessorCount);
+            match = new CMatching(padre, Environment.ProcessorCount);
             match.THRESHOLD_INSIDE = parametros.Match.THRESHOLD_INSIDE;
             match.THRESHOLD_QUALITY = parametros.Match.THRESHOLD_QUALITY;
             match.MATCHING_TIMEOUT = parametros.Match.MATCHING_TIMEOUT;
@@ -63,7 +63,7 @@ namespace Billetrack
 
                     //Crop and rotate the image
                     CroppedImg = _Padre._Aux.RotateAndCropImage(ImageInfo.Image);
-                    //MessageBox.Show("girada y crop la imagen en processing");
+                  
 
                     //Obtain the path to save the images and descriptors
                     path_sinimagen = _Padre._BilletrackDB.Factory.Name + "\\" + DateTime.Now.Year.ToString("0000") + "\\" + DateTime.Now.Month.ToString("00") + "\\" + DateTime.Now.Day.ToString("00") + "\\" + ImageInfo._Billet.Family.Cast + "\\";
@@ -72,34 +72,25 @@ namespace Billetrack
                     path_image_original = path_image.Substring(0, path_image.Length - 4) + "_ORIGINAL.jpg";
                     total_path_orig = total_path.Substring(0, total_path.Length - 4) + "_ORIGINAL.jpg";
 
-                    //MessageBox.Show("calculados los path en processing");
                     //save the images
                     if (!Directory.Exists(_Padre._BilletrackDB.Factory.PathImages + path_sinimagen)) Directory.CreateDirectory(_Padre._BilletrackDB.Factory.PathImages + path_sinimagen);
                     ImageInfo.Image.Save(total_path_orig);
                     CroppedImg.Save(total_path);
 
-                    //MessageBox.Show("guardadas las imagens en processing");
-
                     //Calculate the image statistics
                     stats = _Padre._Aux.CalculateStatsImage(CroppedImg, ImageInfo.ExposureTime);
-
-                    //MessageBox.Show("calculadas las estadisticas en processing");
 
                     //Insert the image in the database and its events
                     InsertImage();
 
-                    //MessageBox.Show("Inserted the image in the database and its events en processing");
-
                     //Obtain the descriptors and save 
                     Descriptors();
-                    //MessageBox.Show("Obtained the descriptors and save  en processing");
+                   
 
                     //Send the images to the next Factories if needed
                     //Also send the images to a backup location if needed
                     SendFTP();
-                  
-                    //MessageBox.Show("sent the descriptors and save  en processing");
-
+                   
                     //search the match for the current image if needed
                     Image<Gray, byte> matched_image = Match(ref _MatchedBillet);
 
@@ -117,10 +108,10 @@ namespace Billetrack
             }
             catch (Exception err)
             {
-                   MessageBox.Show("Error processing : " + err.Message);
+                  
                 //Logging
-                _Parametros.LOGTXTMessage = "Error in processing loop: " + err.Message;
-                _Padre._LogError.SetData(ref _Parametros, "Informacion");
+                   _Padre.AddLogError("Error in processing loop: " + err.Message);
+               
             }
 
 
@@ -155,7 +146,7 @@ namespace Billetrack
 
         private void SendBillet(Billet MatchedBillet, List<EventBilletrack> events)
         {
-            if(_Padre._BilletrackDB.Factory.Name.Contains("ACERIA"))    ((PCComClientThread)_Padre._DispatcherThreads["Communication"]).SendBilletSteelMaking(MatchedBillet, events);
+            if(_Padre._BilletrackDB.Factory.Name.Contains("ACERIA"))    ((PCComClientThread)_Padre._DispatcherThreads["Communication"]).SendBilletSteelMaking(ImageInfo._Billet, events);
             if(_Padre._BilletrackDB.Factory.Name.Contains("ALAMBRON"))     ((PCComClientThread)_Padre._DispatcherThreads["Communication"]).SendBilletRodMill(MatchedBillet, events);
         }
 
@@ -181,14 +172,16 @@ namespace Billetrack
                 {
                     int[] CandidatesID = new int[Candidates.Count];
                     string[] CandidatesPaths = new string[Candidates.Count];
-
                     int i = 0;
                     //save the candidates ID and candidates path in separated arrays
                     foreach (KeyValuePair<int, string> entry in Candidates)
                     {
                         CandidatesID[i] = entry.Key;
                         CandidatesPaths[i] = entry.Value;
+                       // this._Padre.AddLogDesarrollo("Posible candidato:" + CandidatesID[i] + " con path" + CandidatesPaths[i]);
                         i++;
+                      
+                  
                     }
                     resultMatching[] resultados = new resultMatching[CandidatesID.Length];
 
@@ -263,26 +256,26 @@ namespace Billetrack
         }
         private void SendFTP()
         {
-           
+            //MessageBox.Show("entrando ftp");
             if (_Padre._BilletrackDB.Billetrack.Destiny != null)
             {
 
                 try
                 {
                     SpinFTP ftp = new SpinFTP();
-                  
+                    //MessageBox.Show("enviando ftp a  " + _Padre._BilletrackDB.Billetrack.Destiny.Count+" destinos");
                     foreach (Factory factory in _Padre._BilletrackDB.Billetrack.Destiny)
                     {
                         //START THE COMMUNICATION
-                       
+                        //MessageBox.Show("connecting ftp : " + _Padre._BilletrackDB.Billetrack.Backup.HostFTP + " " + _Padre._BilletrackDB.Billetrack.Backup.UserFTP + " " + _Padre._BilletrackDB.Billetrack.Backup.PasswordFTP);
                         ftp.Connect(factory.HostFTP, factory.UserFTP, factory.PasswordFTP);
                         ftp.Start();
                         //Send the cropped image
-                        ftp.UploadFile(total_path, path_sinimagen);
+                        ftp.UploadFile(total_path, path_sinimagen);                       
                         //send the original image
-                        ftp.UploadFile(total_path_orig, path_sinimagen);
+                        ftp.UploadFile(total_path_orig, path_sinimagen);                      
                         //send the descriptors
-                        ftp.UploadFile(total_path + CSurf.EXTENSION_DESCRIPTORS, path_sinimagen);
+                        ftp.UploadFile(total_path + CSurf.EXTENSION_DESCRIPTORS, path_sinimagen);                       
                         //send the keypoints
                         ftp.UploadFile(total_path + CSurf.EXTENSION_KEYPOINTS, path_sinimagen);
                         ftp.Stop();
@@ -297,7 +290,8 @@ namespace Billetrack
                     //throw new SpinException("Error sending the files to the next factory" + error.Message);
                 }
             }
-           
+            //else MessageBox.Show("no hay destino");
+            //MessageBox.Show("enviando ftp backup a  " + _Padre._BilletrackDB.Billetrack.Destiny.Count + " destinos");
             if (_Padre._BilletrackDB.Billetrack.Backup != null)
             {
 
@@ -310,13 +304,13 @@ namespace Billetrack
                     ftp.Connect(_Padre._BilletrackDB.Billetrack.Backup.HostFTP, _Padre._BilletrackDB.Billetrack.Backup.UserFTP, _Padre._BilletrackDB.Billetrack.Backup.PasswordFTP);
                     ftp.Start();
                     //Send the cropped image
-                    ftp.UploadFile(total_path, path_image);
+                    ftp.UploadFile(total_path, path_sinimagen);
                     //send the original image
-                    ftp.UploadFile(total_path_orig, path_image_original);
+                    ftp.UploadFile(total_path_orig, path_sinimagen);
                     //send the descriptors
-                    ftp.UploadFile(total_path + CSurf.EXTENSION_DESCRIPTORS, path_image + CSurf.EXTENSION_DESCRIPTORS);
+                    ftp.UploadFile(total_path + CSurf.EXTENSION_DESCRIPTORS, path_sinimagen);
                     //send the keypoints
-                    ftp.UploadFile(total_path + CSurf.EXTENSION_KEYPOINTS, path_image + CSurf.EXTENSION_KEYPOINTS);
+                    ftp.UploadFile(total_path + CSurf.EXTENSION_KEYPOINTS, path_sinimagen);
                     ftp.Stop();
                     ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).FTP = true;
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using SpinPlatform.Comunicaciones;
+using System.Windows.Forms;
 
 namespace Billetrack
 {
@@ -50,11 +51,14 @@ namespace Billetrack
          
           public BilletCom( Byte[] msg)
           {
+
                System.Text.UTF8Encoding   encoding = new System.Text.UTF8Encoding();
-              _ScheduledBillet = encoding.GetString(msg, 2, 12);
-            _RealBillet = encoding.GetString(msg,14, 12);
+               _ScheduledBillet = encoding.GetString(msg, 2, 12);
+            _RealBillet = encoding.GetString(msg,14, 12);           
               _Billet= new Billet(new Family(encoding.GetString(msg,2,6)),Int16.Parse(encoding.GetString(msg,8,1)),Int16.Parse(encoding.GetString(msg,10,2)));
               _Billet.Time = DateTime.Now;
+              _Billet.BilletProp1 = _ScheduledBillet;
+              _Billet.BilletProp2 = RealBillet;
               
           }
 

@@ -149,7 +149,7 @@ namespace Billetrack.Forms
                     }
 
                     position_max = match.MatchingOneToVarius(path_recortada, ref ImagenesAceriavector, out resultados);
-                    classificator.InsertMatch(resultados, position_max);
+                    classificator.InsertSetMatches(resultados, position_max);
 
                     watch.Stop();
 

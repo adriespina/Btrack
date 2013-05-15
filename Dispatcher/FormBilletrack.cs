@@ -23,7 +23,7 @@ namespace Billetrack
         delegateDisplayResults d_DisplayResults;  //puntero a la funcion de pintar   
         dynamic ConfigData;
         int cont_disk_space = 0;//contador para borrar el disco duro 
-      
+       
 
         public FormBilletrack()
         {
@@ -39,6 +39,7 @@ namespace Billetrack
             timer_State.Enabled = true;
           
             _cConfiguration._resetApplicationButton.Click += new EventHandler(_resetApplicationButton_Click);
+           
        
         }
 
@@ -80,33 +81,39 @@ namespace Billetrack
                         #region MatchInfo
                         case "MatchInfo":
 
-                            Match matched = (Match)datos.MatchedInfo;
-                              _cMain._cResultsCroppedObj._cPicture.Image = matched.Image_Cropped.ToBitmap();
-                            if (matched.Image_Matched != null) _cMain._cResultsMatchedObj._cPicture.Image = matched.Image_Matched.ToBitmap();
-                            else
-                            {
-                                using (Image<Gray, byte> imgen = new Image<Gray, byte>(200, 200))
-                                {
-                                    _cMain._cResultsMatchedObj._cPicture.Image = imgen.ToBitmap();
-                                }
-                            }
+                           
+                               
+                                    Match matched = (Match)datos.MatchedInfo;
+                                    _cMain._cResultsCroppedObj._cPicture.Image = matched.Image_Cropped.ToBitmap();
 
-                            if (matched.Billet != null)
-                            {
-                                _cMain._labelCastCalculated.MainText = matched.Billet.Family.Cast;
-                                _cMain._labelLineCalculated.MainText = matched.Billet.Line.ToString("0");
-                                _cMain._labelNumberCalculated.MainText = matched.Billet.NCut.ToString("00");
-                                _cMain._labelError.MainText = " OK ";
-                            }
-                            else
-                            {
-                                _cMain._labelCastCalculated.MainText = "_";
-                                _cMain._labelLineCalculated.MainText = "_";
-                                _cMain._labelNumberCalculated.MainText = "_";
-                                _cMain._labelError.MainText = " BILLET NOT FOUND ";
-                            }
+                                    if (dispatch._BilletrackDB.Factory.Name.ToUpper().Contains("ALAMBRON"))  //Solo para Aviles
+                                    {
+                                        if (matched.Image_Matched != null) _cMain._cResultsMatchedObj._cPicture.Image = matched.Image_Matched.ToBitmap();
+                                        else
+                                        {
+                                            using (Image<Gray, byte> imgen = new Image<Gray, byte>(200, 200))
+                                            {
+                                                _cMain._cResultsMatchedObj._cPicture.Image = imgen.ToBitmap();
+                                            }
+                                        }
 
-                            matched.Dispose();
+                                        if (matched.Billet != null)
+                                        {
+                                            _cMain._labelCastCalculated.MainText = matched.Billet.Family.Cast;
+                                            _cMain._labelLineCalculated.MainText = matched.Billet.Line.ToString("0");
+                                            _cMain._labelNumberCalculated.MainText = matched.Billet.NCut.ToString("00");
+                                            _cMain._labelError.MainText = " OK ";
+                                        }
+                                        else
+                                        {
+                                            _cMain._labelCastCalculated.MainText = "_";
+                                            _cMain._labelLineCalculated.MainText = "_";
+                                            _cMain._labelNumberCalculated.MainText = "_";
+                                            _cMain._labelError.MainText = " BILLET NOT FOUND ";
+                                        }
+
+                                        matched.Dispose();
+                                    }
                             break;
                         # endregion
                         #region LastBillet
@@ -310,6 +317,34 @@ namespace Billetrack
             }
             else
                 panel1.Controls.Add(_cMain);
+        }
+
+        private void classificationTrainningToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _cImageAnalysis.CloseCamera();
+            if (panel1.Controls.Contains(_cMain))
+            {
+                dispatch.Stop();
+                timer_State.Enabled = false;
+
+            }
+            if (panel1.Controls.Contains(_cMatchingOffline) && _cMatchingOffline._running)
+            {
+                if (MessageBox.Show("You are running a matching experiment, do you want it to run in background?", "Alarm", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2, MessageBoxOptions.DefaultDesktopOnly) == DialogResult.No)
+                    _cMatchingOffline.play_Click(this, null);
+
+            }
+            if (!panel1.Controls.Contains(_cClassificationTrainning))
+            {
+                SpinPlatform.Controls.spinLoadingScreenForm a = new SpinPlatform.Controls.spinLoadingScreenForm(200, panel1, "", global::Billetrack.Properties.Resources.bg22);
+                a.Show();
+
+                panel1.Controls.Clear();
+                panel1.Controls.Add(_cClassificationTrainning);
+                panel1.Refresh();
+             
+                a.CloseLoading();
+            }
         }
     }
 }

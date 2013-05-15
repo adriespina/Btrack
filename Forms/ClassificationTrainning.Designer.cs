@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ClassificationTrainning));
-            this.picture2 = new Billetrack.Forms.Picture();
-            this.picture3 = new Billetrack.Forms.Picture();
+            this.picture_destiny = new Billetrack.Forms.Picture();
+            this.picture_origin = new Billetrack.Forms.Picture();
             this.button_NEWMATCH = new System.Windows.Forms.Button();
             this.button_ADDFAILURE = new System.Windows.Forms.Button();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.checkBox_correction = new System.Windows.Forms.CheckBox();
             this._controlesOriginPath = new System.Windows.Forms.Panel();
             this.label_path_origin = new System.Windows.Forms.Label();
             this.button3 = new System.Windows.Forms.Button();
@@ -51,59 +51,62 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_DESTINY)).BeginInit();
             this.SuspendLayout();
             // 
-            // picture2
+            // picture_destiny
             // 
-            this.picture2._ImageBackground = ((System.Drawing.Image)(resources.GetObject("picture2._ImageBackground")));
-            this.picture2._Zoom = false;
-            this.picture2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
-            this.picture2.DrawROI = false;
-            this.picture2.Location = new System.Drawing.Point(619, 39);
-            this.picture2.Name = "picture2";
-            this.picture2.Padding = new System.Windows.Forms.Padding(3);
-            this.picture2.ROI = new System.Drawing.Rectangle(0, 0, 0, 0);
-            this.picture2.Size = new System.Drawing.Size(391, 345);
-            this.picture2.TabIndex = 1;
+            this.picture_destiny._ImageBackground = ((System.Drawing.Image)(resources.GetObject("picture_destiny._ImageBackground")));
+            this.picture_destiny._Zoom = false;
+            this.picture_destiny.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
+            this.picture_destiny.DrawROI = false;
+            this.picture_destiny.Location = new System.Drawing.Point(619, 39);
+            this.picture_destiny.Name = "picture_destiny";
+            this.picture_destiny.Padding = new System.Windows.Forms.Padding(3);
+            this.picture_destiny.ROI = new System.Drawing.Rectangle(0, 0, 0, 0);
+            this.picture_destiny.Size = new System.Drawing.Size(391, 345);
+            this.picture_destiny.TabIndex = 1;
             // 
-            // picture3
+            // picture_origin
             // 
-            this.picture3._ImageBackground = ((System.Drawing.Image)(resources.GetObject("picture3._ImageBackground")));
-            this.picture3._Zoom = false;
-            this.picture3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
-            this.picture3.DrawROI = false;
-            this.picture3.Location = new System.Drawing.Point(202, 39);
-            this.picture3.Name = "picture3";
-            this.picture3.Padding = new System.Windows.Forms.Padding(3);
-            this.picture3.ROI = new System.Drawing.Rectangle(0, 0, 0, 0);
-            this.picture3.Size = new System.Drawing.Size(391, 345);
-            this.picture3.TabIndex = 2;
+            this.picture_origin._ImageBackground = ((System.Drawing.Image)(resources.GetObject("picture_origin._ImageBackground")));
+            this.picture_origin._Zoom = false;
+            this.picture_origin.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
+            this.picture_origin.DrawROI = false;
+            this.picture_origin.Location = new System.Drawing.Point(202, 39);
+            this.picture_origin.Name = "picture_origin";
+            this.picture_origin.Padding = new System.Windows.Forms.Padding(3);
+            this.picture_origin.ROI = new System.Drawing.Rectangle(0, 0, 0, 0);
+            this.picture_origin.Size = new System.Drawing.Size(391, 345);
+            this.picture_origin.TabIndex = 2;
             // 
             // button_NEWMATCH
             // 
+            this.button_NEWMATCH.BackColor = System.Drawing.Color.White;
             this.button_NEWMATCH.Location = new System.Drawing.Point(1082, 52);
             this.button_NEWMATCH.Name = "button_NEWMATCH";
             this.button_NEWMATCH.Size = new System.Drawing.Size(109, 51);
             this.button_NEWMATCH.TabIndex = 3;
             this.button_NEWMATCH.Text = "ADD NEW MATCH";
-            this.button_NEWMATCH.UseVisualStyleBackColor = true;
+            this.button_NEWMATCH.UseVisualStyleBackColor = false;
+            this.button_NEWMATCH.Click += new System.EventHandler(this.button_NEWMATCH_Click);
             // 
             // button_ADDFAILURE
             // 
+            this.button_ADDFAILURE.BackColor = System.Drawing.Color.White;
             this.button_ADDFAILURE.Location = new System.Drawing.Point(1082, 122);
             this.button_ADDFAILURE.Name = "button_ADDFAILURE";
             this.button_ADDFAILURE.Size = new System.Drawing.Size(109, 51);
             this.button_ADDFAILURE.TabIndex = 3;
             this.button_ADDFAILURE.Text = "ADD NEW FAILURE";
-            this.button_ADDFAILURE.UseVisualStyleBackColor = true;
+            this.button_ADDFAILURE.UseVisualStyleBackColor = false;
             // 
-            // checkBox1
+            // checkBox_correction
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(1082, 214);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(158, 17);
-            this.checkBox1.TabIndex = 4;
-            this.checkBox1.Text = "CORRECT TRAINING FILE";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox_correction.AutoSize = true;
+            this.checkBox_correction.Location = new System.Drawing.Point(1082, 214);
+            this.checkBox_correction.Name = "checkBox_correction";
+            this.checkBox_correction.Size = new System.Drawing.Size(158, 17);
+            this.checkBox_correction.TabIndex = 4;
+            this.checkBox_correction.Text = "CORRECT TRAINING FILE";
+            this.checkBox_correction.UseVisualStyleBackColor = true;
             // 
             // _controlesOriginPath
             // 
@@ -198,8 +201,9 @@
             this.Column1});
             this.dataGridView_ORIGIN.Location = new System.Drawing.Point(202, 472);
             this.dataGridView_ORIGIN.Name = "dataGridView_ORIGIN";
-            this.dataGridView_ORIGIN.Size = new System.Drawing.Size(363, 150);
+            this.dataGridView_ORIGIN.Size = new System.Drawing.Size(363, 266);
             this.dataGridView_ORIGIN.TabIndex = 22;
+            this.dataGridView_ORIGIN.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_ORIGIN_CellContentClick);
             // 
             // dataGridView_DESTINY
             // 
@@ -210,8 +214,9 @@
             this.Column2});
             this.dataGridView_DESTINY.Location = new System.Drawing.Point(619, 472);
             this.dataGridView_DESTINY.Name = "dataGridView_DESTINY";
-            this.dataGridView_DESTINY.Size = new System.Drawing.Size(363, 150);
+            this.dataGridView_DESTINY.Size = new System.Drawing.Size(363, 266);
             this.dataGridView_DESTINY.TabIndex = 22;
+            this.dataGridView_DESTINY.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_DESTINY_CellContentClick);
             // 
             // Column1
             // 
@@ -237,11 +242,11 @@
             this.Controls.Add(this.dataGridView_ORIGIN);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this._controlesOriginPath);
-            this.Controls.Add(this.checkBox1);
+            this.Controls.Add(this.checkBox_correction);
             this.Controls.Add(this.button_ADDFAILURE);
             this.Controls.Add(this.button_NEWMATCH);
-            this.Controls.Add(this.picture3);
-            this.Controls.Add(this.picture2);
+            this.Controls.Add(this.picture_origin);
+            this.Controls.Add(this.picture_destiny);
             this.Name = "ClassificationTrainning";
             this.Size = new System.Drawing.Size(1266, 800);
             this._controlesOriginPath.ResumeLayout(false);
@@ -255,11 +260,11 @@
 
         #endregion
 
-        private Picture picture2;
-        private Picture picture3;
+        private Picture picture_destiny;
+        private Picture picture_origin;
         private System.Windows.Forms.Button button_NEWMATCH;
         private System.Windows.Forms.Button button_ADDFAILURE;
-        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox checkBox_correction;
         private System.Windows.Forms.Panel _controlesOriginPath;
         private System.Windows.Forms.Label label_path_origin;
         private System.Windows.Forms.Button button3;

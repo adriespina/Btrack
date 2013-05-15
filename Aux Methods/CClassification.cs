@@ -34,7 +34,7 @@ namespace Billetrack
         
     }
     
-        public void InsertMatch(resultMatching[] results,int index)
+        public void InsertSetMatches(resultMatching[] results,int index)
         {
             try
             {
@@ -61,12 +61,45 @@ namespace Billetrack
                         xlWorkSheet.Cells[lastUsedRow, 9] = rst.bdst_corners_inside.ToString();
                         xlWorkSheet.Cells[lastUsedRow, 10] = rst.npoints_Homography.ToString();
                         xlWorkSheet.Cells[lastUsedRow, 11] = rst.npoints_Homography_inside.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 12] = rst.bdst_corners_local_inside.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 13] = rst.npoints_included_homography.ToString();                         
+                        xlWorkSheet.Cells[lastUsedRow, 12] = rst.bdst_corners_local_inside.ToString();                                          
                     }
                 }
               
                CloseSaveXLSX();
+            }
+            catch (Exception e)
+            {
+
+                throw new SpinException("Error saving matching statistics to excel file : " + e.Message);
+            }
+        }
+
+        public void InsertMatch(resultMatching rst)
+        {
+            try
+            {
+                lastUsedRow = OpenXLS();
+
+                if (rst.common_KeyPoints != 0)
+                    {
+                        lastUsedRow++;
+                        
+                        xlWorkSheet.Cells[lastUsedRow, 1] = "MATCH";                      
+                        xlWorkSheet.Cells[lastUsedRow, 2] = rst.quality.ToString("F0");
+                        xlWorkSheet.Cells[lastUsedRow, 3] = rst.npoints_included_homography.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 4] = rst.common_KeyPoints.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 5] = rst.inside_KeyPoints.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 6] = rst.total_KeyPoints.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 7] = rst.total_other_keyPoints.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 8] = rst.bHomographyOK.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 9] = rst.bdst_corners_inside.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 10] = rst.npoints_Homography.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 11] = rst.npoints_Homography_inside.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 12] = rst.bdst_corners_local_inside.ToString();                     
+                    }
+           
+
+                CloseSaveXLSX();
             }
             catch (Exception e)
             {
@@ -122,20 +155,25 @@ namespace Billetrack
             return lastUsedRow;
         }
 
-        int FindValueinColumns(string value, string column)
+       public void DeleteRowsContaining(string value, string column)
         {
-            int columna = 0;
+      
           
             lastUsedRow = OpenXLS();
 
-            Range rangocolumna = xlWorkSheet.get_Range(column + "1");
-           Range rangoencontrado= rangocolumna.Find(value,Missing.Value, Missing.Value,Excel.XlLookAt.xlWhole, Missing.Value,Excel.XlSearchDirection.xlNext,Missing.Value, Missing.Value, Missing.Value);
-           string direccion= rangoencontrado.get_Address();
-
-
+            Range rangocolumna = xlWorkSheet.get_Range(column + "1", column+lastUsedRow.ToString());
+            Range rangoencontrado = rangocolumna;
+            while (rangoencontrado!=null)
+            {
+                 rangoencontrado = rangocolumna.Find(value, Missing.Value, Missing.Value, Excel.XlLookAt.xlWhole, Missing.Value, Excel.XlSearchDirection.xlNext, Missing.Value, Missing.Value, Missing.Value);
+                string direccion = rangoencontrado.get_Address();
+                string col = direccion.Substring(direccion.LastIndexOf("$") + 1);
+                int columna_borrar = int.Parse(col);
+                
+            }
             CloseSaveXLSX();
 
-            return columna;
+         
         
         }
 
