@@ -53,11 +53,14 @@ namespace Billetrack
                 ushort idmessage = 12001;
                 System.Buffer.BlockCopy(BitConverter.GetBytes(idmessage), 0, (byte[])temp.COMMessage, 0, 2);
 
-                string palanquilla,error,fecha;
+                string palanquilla_prevista,palanquilla_real,error,fecha;
                 //hubo matching
                 if (billet!=null)
                 {
-                    palanquilla = billet.Family.Cast + billet.Line.ToString("0") + "0" + billet.NCut.ToString("00") + "00";
+                    //palanquilla = billet.Family.Cast + billet.Line.ToString("0") + "0" + billet.NCut.ToString("00") + "00";
+                    palanquilla_prevista = billet.BilletProp1;
+                    palanquilla_real = billet.BilletProp2;
+                  //  MessageBox.Show("Enviando Aceria . Palanquilla : " + palanquilla_prevista + " ; " + palanquilla_real);
                     fecha = billet.Time.Year.ToString("0000").Substring(2, 2) + billet.Time.Month.ToString("00") + billet.Time.Day.ToString("00") + billet.Time.Hour.ToString("00") + billet.Time.Minute.ToString("00") + billet.Time.Second.ToString("00");
                      error = "00";
                     if (eventos.Count > 0)
@@ -74,7 +77,9 @@ namespace Billetrack
                     //no hubo matching
                 else
                 {
-                    palanquilla = "000000000000";
+                    //palanquilla = "000000000000";
+                    palanquilla_prevista = "000000000000";
+                    palanquilla_real = "000000000000";
                     DateTime ahora = DateTime.Now;
                     fecha = ahora.Year.ToString("0000").Substring(2, 2) + ahora.Month.ToString("00") + ahora.Day.ToString("00") + ahora.Hour.ToString("00") + ahora.Minute.ToString("00") + ahora.Second.ToString("00");
                     error = "00";
@@ -88,8 +93,8 @@ namespace Billetrack
                     _Parametros.LOGTXTMessage = "Sending error matching to steel making";
                     _Padre._Log.SetData(ref _Parametros, "Informacion");
                 }
-                System.Buffer.BlockCopy(encoding.GetBytes(palanquilla), 0, (byte[])temp.COMMessage, 2, 12);
-                System.Buffer.BlockCopy(encoding.GetBytes(palanquilla), 0, (byte[])temp.COMMessage, 14, 12);
+                System.Buffer.BlockCopy(encoding.GetBytes(palanquilla_prevista), 0, (byte[])temp.COMMessage, 2, 12);
+                System.Buffer.BlockCopy(encoding.GetBytes(palanquilla_real), 0, (byte[])temp.COMMessage, 14, 12);
                 System.Buffer.BlockCopy(encoding.GetBytes(fecha), 0, (byte[])temp.COMMessage, 26, 12);
                 System.Buffer.BlockCopy(encoding.GetBytes(error), 0, (byte[])temp.COMMessage, 38, 2);
                 string reserva = "0000000000000000";
@@ -117,7 +122,13 @@ namespace Billetrack
                 temp.COMMessage = new Byte[200];
 
                 ushort idmessage = 13001;
-                System.Buffer.BlockCopy(BitConverter.GetBytes(idmessage), 0, (byte[])temp.COMMessage, 0, 2);
+                //System.Buffer.BlockCopy(BitConverter.GetBytes(idmessage), 0, (byte[])temp.COMMessage, 0, 2);
+
+                //ñapa para que coincida con la versin de cesar
+
+                byte[] bytes_ushort=BitConverter.GetBytes(idmessage);
+                System.Buffer.BlockCopy(bytes_ushort, 1, (byte[])temp.COMMessage, 0, 1);
+                System.Buffer.BlockCopy(bytes_ushort, 0, (byte[])temp.COMMessage, 1, 1);
 
                 string palanquilla, error, fecha, relleno1;
                 //hubo matching
@@ -183,7 +194,15 @@ namespace Billetrack
                 dynamic temp = new ExpandoObject();
                 temp.COMMessage = new Byte[200];
                 ushort idmessage = 13002;
-                System.Buffer.BlockCopy(BitConverter.GetBytes(idmessage), 0, (byte[])temp.COMMessage, 0, 2);               
+                //System.Buffer.BlockCopy(BitConverter.GetBytes(idmessage), 0, (byte[])temp.COMMessage, 0, 2);   
+
+
+                //ñapa para que coincida con la versin de cesar
+                byte[] bytes_ushort = BitConverter.GetBytes(idmessage);
+                System.Buffer.BlockCopy(bytes_ushort, 1, (byte[])temp.COMMessage, 0, 1);
+                System.Buffer.BlockCopy(bytes_ushort, 0, (byte[])temp.COMMessage, 1, 1);
+
+
                 _server.SetData(ref temp, "EnviarMensaje");
             }
 
@@ -209,27 +228,31 @@ namespace Billetrack
                     Byte[] val = (Byte[])((SharedData<Byte[]>)SharedMemory["SocketReader"]).Pop();
                     int id = BitConverter.ToUInt16(val,0);
 
-
+                    //RPC
+                    
+                    
                     switch (id)
                     {
                            
                         case 22001: //Aceria envia la sincronizacion horaria
                             hora = encoding.GetString(val, 2, 12);
                             SetTime(hora);
-                       
+                           // this._Padre.AddLogDesarrollo("Recibido mensaje del ordenador de proceso de tipo 22001");   
                             break;
                       
                         case 23001:  //Alambron envia la sincronizacion horaria y le contestamos
                             hora = encoding.GetString(val, 2, 12);
                             SetTime(hora);
+                           // this._Padre.AddLogDesarrollo("Recibido mensaje del ordenador de proceso de tipo 23001");
                             SendAcknoledge();
                             break;
                         case 23002://Alambron envia la señal de nueva palanquilla
-                           
+                            
                             string family=encoding.GetString(val, 2, 6);
                             string line=encoding.GetString(val, 8, 1);
                             string  cut=encoding.GetString(val, 9, 2);
                             string  distance=encoding.GetString(val, 11, 4);
+                            this._Padre.AddLogInformation("Recibido mensaje de alambron de nueva palanquilla: familia " + family + ",linea " + line + ",cut " + cut + ",distancia " + distance);
                             //MessageBox.Show("recibido palanquilla  aceria : " + family + " ; " + line + " ; " + cut + " ; " + distance + " ; ");
                              ((SharedData<Billet>)_SharedMemory["LastBillet"]).Set(0, new Billet(new Family(family),int.Parse(line),int.Parse(cut),int.Parse(distance),DateTime.Now));
                             _Events["BilletToProcess"].Set();
@@ -238,7 +261,9 @@ namespace Billetrack
                            
                         case 22003: //Aceria envia la señal de nueva palanquilla
                             //read the information sent by PC
-                            BilletCom ReceivedBillet = new BilletCom(val);                           
+                            BilletCom ReceivedBillet = new BilletCom(val);
+                            this._Padre.AddLogInformation("Recibido mensaje de aceria de tipo 22003: familia " + ReceivedBillet.Billet.Family.Cast + ",linea " + ReceivedBillet.Billet.Line + ",cut " + ReceivedBillet.Billet.NCut + ",distancia " + ReceivedBillet.Billet.Distance );
+                          
                             //MessageBox.Show("recibido palanquilla  aceria : " + ReceivedBillet.Billet.Family.Cast + " ; " + ReceivedBillet.Billet.Line + " ; " + ReceivedBillet.Billet.NCut );
                             ((SharedData<Billet>)_SharedMemory["LastBillet"]).Set(0, ReceivedBillet.Billet);
                             _Events["BilletToProcess"].Set();

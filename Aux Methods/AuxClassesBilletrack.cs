@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
+using SpinPlatform.Errors;
 
 
 
@@ -92,6 +93,44 @@ public bool IsPresent
 
         public imgStats()
         { }
+
+        public string GetSQLInsertColumns()
+        {
+            return "MEAN,STD,SUM,NONZERO,MEANNONZERO,MAXHIST,WIDTHHIST,MAXHISTNONZERO,WIDTHHISTNONZERO,WIDTH,HEIGHT,NPIXELS,PERCNONZERO,PERCHEIGHTHIST,PERCHEIGHTHISTNONZERO,FOCUSINDICATOR,PARAM_FOCUS_NORMALIZEFREQ,EXPOSURETIME";
+        }
+
+        public string GetSQLValues()
+        {
+            try
+            {
+
+                string ret = String.Format("{0:0.00}", Media) + ",";
+                ret += String.Format("{0:0.00}", Std) + ",";
+                ret += Suma + ",";
+                ret += NonZero + ",";
+                ret += String.Format("{0:0.00}", MediaNonZero) + ",";
+                ret += MaxHist + ",";
+                ret += AnchoHist + ",";
+                ret += MaxHistNonZero + ",";
+                ret += AnchoHistNonZero + ",";
+                ret += Width + ",";
+                ret += Height + ",";
+                ret += nPixels + ",";
+                ret += String.Format("{0:0.00}", percNonZero) + ",";
+                ret += String.Format("{0:0.00}", percHeightHist) + ",";
+                ret += String.Format("{0:0.00}", percHeightHistNonZero) + ",";
+                ret += String.Format("{0:0.00}", FocusIndicator) + ",";
+                ret += String.Format("{0:0.00}", Param_Focus_normalizefreq) + ",";
+                ret += ExposureTime;
+                return ret;
+            }
+            catch (Exception e)
+            {
+
+                throw new SpinException("imgStats: GetSQLValues" + e.Message);
+            }
+        }
+
     }
     public class Factory
     {
@@ -164,50 +203,58 @@ public bool IsPresent
         }
         public string GetSQLInsert(string tableName)
         {
-            bool addedone = false;
-            string values = "";
-            string result = "INSERT INTO " + tableName + "(";
-            if (ID > 0)
+            try
             {
-                result += "IDFAMILY";
-                addedone = true;
-                values += this.ID.ToString();
-       
-            }
-            #region Descriptor
-            if (Cast.Length > 0)
-            {
-                if (addedone)
+                bool addedone = false;
+                string values = "";
+                string result = "INSERT INTO " + tableName + "(";
+                if (ID > 0)
                 {
-                    result += ",";
-                    values += ",";
+                    result += "IDFAMILY";
+                    addedone = true;
+                    values += this.ID.ToString();
+
                 }
-                else addedone = true;
-                result += "CASTNUMBER";
-                values += "'"+Cast+"'" ;
-            }
-            #endregion
-            #region Line
-            if (CreationTime!=null)
-            {
-                if (addedone)
+                #region Descriptor
+                if (Cast.Length > 0)
                 {
-                    result += ",";
-                    values += ",";
+                    if (addedone)
+                    {
+                        result += ",";
+                        values += ",";
+                    }
+                    else addedone = true;
+                    result += "CASTNUMBER";
+                    values += "'" + Cast + "'";
                 }
-                else addedone = true;
-                result += "CASTDATE";
-                values += "to_date('" + CreationTime + "','dd/mm/yyyy hh24:mi:ss')";
+                #endregion
+                #region Line
+                if (CreationTime != null)
+                {
+                    if (addedone)
+                    {
+                        result += ",";
+                        values += ",";
+                    }
+                    else addedone = true;
+                    result += "CASTDATE";
+                    values += "to_date('" + CreationTime + "','dd/mm/yyyy hh24:mi:ss')";
+                }
+                #endregion
+
+                result += ") VALUES (" + values + ")";
+
+
+                return result;
+
+
+
             }
-            #endregion
-           
-            result += ") VALUES (" + values + ")";
-
-
-            return result;
-
-
-
+            catch (Exception e)
+            {
+                
+                throw new SpinException("Family: GetSQLInsert" + e.Message);
+            }
         }
 
          #region dispose
@@ -315,94 +362,102 @@ public bool IsPresent
         }
         public string GetSQLInsert(string tableName)
         {
-            bool addedone = false;
-            string values="";
-        string result="INSERT INTO "+tableName+"(";
-        if (ID > 0)
-        {
-            result += "IDBILLET";
-            addedone = true;
-            values+=this.ID.ToString();
-        }
-        #region Descriptor
-        if (Descriptor != null)
-        {
-            if (Descriptor.Length > 0)
+            try
             {
-                if (addedone)
+                bool addedone = false;
+                string values = "";
+                string result = "INSERT INTO " + tableName + "(";
+                if (ID > 0)
                 {
-                    result += ",";
-                    values += ",";
+                    result += "IDBILLET";
+                    addedone = true;
+                    values += this.ID.ToString();
                 }
-                else addedone = true;
-                result += "BILLETDESCRIPTOR";
-                values += "'" + Descriptor + "'";
-            }
-        }
-        #endregion
-        #region Line
-        if (Line >= 0)
-        {
-            if (addedone)
-            {
-                result += ",";
-                values += ",";
-            }
-            else addedone = true;
-            result += "LINE";
-            values += this.Line;
-        }
-        #endregion
-        #region Family
-        if (Family!=null)
-        {
-            if (addedone)
-            {
-                result += ",";
-                values += ",";
-            }
-            else addedone = true;
-            result += "IDFAMILY";
-            values += this.Family.ID;
-        }
-        #endregion
-        #region Position
-        if (Position >= 0)
-        {
-            if (addedone)
-            {
-                result += ",";
-                values += ",";
-            }
-            else addedone = true;
-            result += "Position";
-            values += this.Position;
-        }
-        #endregion
-        #region NCut
-        if (NCut >= 0)
-        {
-            if (addedone)
-            {
-                result += ",";
-                values += ",";
-            }
-            else addedone = true;
-            result += "NCut";
-            values += this.NCut;
-        }
-        #endregion
-      
-        //public string BilletProp1;
-        //public double BilletProp3; //RPC double?? en BD es Int32.
-        //public string BilletProp2;
-        //public double BilletProp4;
+                #region Descriptor
+                if (Descriptor != null)
+                {
+                    if (Descriptor.Length > 0)
+                    {
+                        if (addedone)
+                        {
+                            result += ",";
+                            values += ",";
+                        }
+                        else addedone = true;
+                        result += "BILLETDESCRIPTOR";
+                        values += "'" + Descriptor + "'";
+                    }
+                }
+                #endregion
+                #region Line
+                if (Line >= 0)
+                {
+                    if (addedone)
+                    {
+                        result += ",";
+                        values += ",";
+                    }
+                    else addedone = true;
+                    result += "LINE";
+                    values += this.Line;
+                }
+                #endregion
+                #region Family
+                if (Family != null)
+                {
+                    if (addedone)
+                    {
+                        result += ",";
+                        values += ",";
+                    }
+                    else addedone = true;
+                    result += "IDFAMILY";
+                    values += this.Family.ID;
+                }
+                #endregion
+                #region Position
+                if (Position >= 0)
+                {
+                    if (addedone)
+                    {
+                        result += ",";
+                        values += ",";
+                    }
+                    else addedone = true;
+                    result += "Position";
+                    values += this.Position;
+                }
+                #endregion
+                #region NCut
+                if (NCut >= 0)
+                {
+                    if (addedone)
+                    {
+                        result += ",";
+                        values += ",";
+                    }
+                    else addedone = true;
+                    result += "NCut";
+                    values += this.NCut;
+                }
+                #endregion
 
-        result += ") VALUES (" + values + ")";
-        return result;
+                //public string BilletProp1;
+                //public double BilletProp3; //RPC double?? en BD es Int32.
+                //public string BilletProp2;
+                //public double BilletProp4;
+
+                result += ") VALUES (" + values + ")";
+                return result;
 
 
 
+            }
+            catch (Exception e)
+            {
+                
+                throw new SpinException("Billet: GetSQLInsert" + e.Message);
+            }
         }
 
           #region dispose
@@ -415,9 +470,17 @@ public bool IsPresent
         /// </summary>
         public void Dispose()
         {
-            this.Dispose(true);
-            // GC.SupressFinalize quita de la cola de finalización al objeto.
-            GC.SuppressFinalize(this);
+            try
+            {
+                this.Dispose(true);
+                // GC.SupressFinalize quita de la cola de finalización al objeto.
+                GC.SuppressFinalize(this);
+            }
+            catch (Exception e)
+            {
+                
+                throw new SpinException("Billet: Dispose" + e.Message);
+            }
         }
 
         /// <summary>
@@ -431,21 +494,29 @@ public bool IsPresent
         /// </param>
         protected virtual void Dispose(bool disposing)
         {
-            // Preguntamos si Dispose ya fue llamado.
-            if (!this.disposed)
+            try
             {
-                if (disposing)
+                // Preguntamos si Dispose ya fue llamado.
+                if (!this.disposed)
                 {
-                    // Llamamos al Dispose de todos los RECURSOS MANEJADOS.
-                   
+                    if (disposing)
+                    {
+                        // Llamamos al Dispose de todos los RECURSOS MANEJADOS.
+
+
+                    }
+
+                    // Acá finalizamos correctamente los RECURSOS NO MANEJADOS
+                    // ...
 
                 }
-
-                // Acá finalizamos correctamente los RECURSOS NO MANEJADOS
-                // ...
-
+                this.disposed = true;
             }
-            this.disposed = true;
+            catch (Exception e)
+            {
+                
+                throw new SpinException("Billet: dispose(bool)" + e.Message);
+            }
         }
 
         /// <summary>

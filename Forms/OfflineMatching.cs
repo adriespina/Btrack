@@ -23,6 +23,7 @@ namespace Billetrack.Forms
         string pathacer, pathalam;
         Bitmap _cambioImagen = null;
         public bool _running = false;
+        public CClassification classificator;
         #endregion
 
         public OfflineMatching()
@@ -42,6 +43,17 @@ namespace Billetrack.Forms
             dataGridView_resultados.Columns[5].Name = "Tiempo msec";
 
             InitializeBackgroundWorker();
+
+            try
+            {
+                classificator = new CClassification(@"C:\Users\Cesar\Desktop\Billetrack Adrian\Codigo\Billetrack64\Billetrack\Matching.xlsx");
+               // classificator = new CClassification("Matching.xlsx");
+
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("error creando clasificador" + e.Message);
+            }
         }
 
         #region WORKERS
@@ -137,6 +149,7 @@ namespace Billetrack.Forms
                     }
 
                     position_max = match.MatchingOneToVarius(path_recortada, ref ImagenesAceriavector, out resultados);
+                    classificator.InsertSetMatches(resultados, position_max);
 
                     watch.Stop();
 
@@ -272,17 +285,15 @@ namespace Billetrack.Forms
                 pathacer = label_path_aceria.Text;
                 label_path_aceria.Text = pathacer;
                 //  pathalam = @"C:\Users\Cesar\Desktop\billetrack_halcon\imagenes\220356_alam";
-               // pathalam = @"C:\Users\Cesar\Desktop\Billetrack Adrian\datos\212119_alam\";
+              //  pathalam = @"C:\Users\Cesar\Desktop\Billetrack Adrian\datos\212119_alam\";
                 pathalam = label_path_alambron.Text;
                 label_path_alambron.Text = pathalam;
 
-                if (label_path_aceria.Text != "." && label_path_alambron.Text != ".")
-                {
+                
                     pathacer = label_path_aceria.Text;
                     pathalam = label_path_alambron.Text;
-                }
-                else return;
 
+                    if (!(System.IO.Directory.Exists(pathacer) && System.IO.Directory.Exists(pathalam)))   return;
 
                 System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(pathacer);
                 System.IO.FileInfo[] files = null;

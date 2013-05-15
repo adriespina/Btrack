@@ -60,8 +60,7 @@ namespace Billetrack
                 }
                 else ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).Camera = true;
 
-
-                //save the online image 
+               //save the online image 
                 using (Image<Rgb, byte> imagen_labels = _Padre._Aux.StampTimeAndSaveImg(Image, true))
                 {
                     //send the image to be displayed in the form
@@ -71,12 +70,17 @@ namespace Billetrack
                 //check if the billet trigger is set
                 if (_Events["BilletToProcess"].WaitOne(0, true))
                 {
+                    this._Padre.AddLogDesarrollo("Recibimos nuevo billet a procesar");
+             
                     //solo sirve para cuando trabajamos sin camara
-                    Camera.NextFileImage();
+                  
+                   Camera.NextFileImage();
+               
                     //Get the information of Last Billet                 
                     _CurrentBillet = (Billet)((SharedData<Billet>)_SharedMemory["LastBillet"]).Get(0);
+               
                     _CurrentBillet.Time = DateTime.Now;
-
+               
                     //Logging
                     _Parametros.LOGTXTMessage = "New Billet acquired. Cast: " + _CurrentBillet.Family.Cast + " Line : " + _CurrentBillet.Line.ToString("00");
                     _Padre._Log.SetData(ref _Parametros, "Informacion");
@@ -93,8 +97,7 @@ namespace Billetrack
 
                     ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).Light = true;
                     //check other events
-
-
+             
                     //Check if Billet is in front the camera
                     int tries = 0;
                     while (tries < _Parametros.Detection.BILLET_SEARCH_FRAMES_TO_WAIT && tries >= 0)
@@ -132,7 +135,6 @@ namespace Billetrack
                         _Events["BilletDetected"].Set();
 
                     }
-
                     //free the image resources
                     Image.Dispose();
                 }
@@ -157,7 +159,7 @@ namespace Billetrack
                 Camera.MAX_EXPOSURE = _Parametros.Camera.MAX_EXPOSURE;
                 Camera.MIN_FRAMERATE = _Parametros.Camera.MIN_FRAMERATE;
                 Camera.MAX_FRAMERATE = _Parametros.Camera.MAX_FRAMERATE;
-                Camera.PATH_IMAGE_SOURCE = _Parametros.Camera.PATH_IMAGE_SOURCE;
+                if (!UsingCamera) Camera.PATH_IMAGE_SOURCE = _Parametros.Camera.PATH_IMAGE_SOURCE;
                 if (UsingCamera) Camera.GrabAsync();
               
             }

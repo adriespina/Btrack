@@ -45,11 +45,6 @@ namespace Billetrack
            }
            return null;
        }
-
-
-
-
-
        public BilletrackDispatcher()
         {
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
@@ -70,7 +65,6 @@ namespace Billetrack
             _Log.Init(_Configuracion.Log);
             _LogError.Init(_Configuracion.LogError);
 
-         
 
            //Clases auxiliares
 
@@ -84,10 +78,8 @@ namespace Billetrack
             _Aux.NROTACIONES = _Configuracion.Detection.BILLET_ROTATION_NUMBER;
 
            
-            _BilletrackDB = new BilletrackDataBase(_Configuracion.General.INSTALLATION_NAME, _Configuracion.DataBase.CONNECTION_STRING, _Configuracion.DataBase.DATABASE_DEBUG);
-          
+            _BilletrackDB = new BilletrackDataBase(this,_Configuracion.General.INSTALLATION_NAME, _Configuracion.DataBase.CONNECTION_STRING, _Configuracion.DataBase.DATABASE_DEBUG);
            
-
      
             // Hilos
 
@@ -122,6 +114,28 @@ namespace Billetrack
       
             
         }
+
+       public void AddLogInformation(string mensaje)
+       {
+           _Configuracion.LOGTXTMessage = mensaje;
+           _Log.SetData(ref _Configuracion, "Informacion");
+         
+       }
+
+       public void AddLogError(string mensaje)
+       {
+           _Configuracion.LOGTXTMessage = mensaje;
+           _LogError.SetData(ref _Configuracion, "Informacion");
+         
+
+       }
+       public void AddLogDesarrollo(string mensaje)
+       {
+           _Configuracion.LOGTXTMessage = mensaje;
+           _Log.SetData(ref _Configuracion, "Desarrollo");
+
+
+       }
 
         public override void GetData(ref dynamic Data, params string[] parameters)
         {
@@ -163,6 +177,7 @@ namespace Billetrack
             {
 
                 Data.TRIErrors = ex.Message;
+                MessageBox.Show("error dispatcher : "+ex.Message);
                 //Ademas se lanzaria la excepcion oportuna
             }
         }

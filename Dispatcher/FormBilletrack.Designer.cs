@@ -50,10 +50,11 @@
             this._cMain = new Billetrack.Forms.Main();
             this._cMatchingOffline = new Billetrack.Forms.OfflineMatching();
             this._cImageAnalysis = new Billetrack.Forms.OfflineImageAnalysis();
+            this._cClassificationTrainning = new Billetrack.Forms.ClassificationTrainning();
+            this.classificationTrainningToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableContenedor.SuspendLayout();
             this._ctopMenu.SuspendLayout();
             this._cstatusMenu.SuspendLayout();
-            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableContenedor
@@ -108,7 +109,8 @@
             // 
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.matchingFromFolderToolStripMenuItem,
-            this.imageAnalysisToolStripMenuItem});
+            this.imageAnalysisToolStripMenuItem,
+            this.classificationTrainningToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(44, 36);
             this.toolsToolStripMenuItem.Text = "Tools";
@@ -116,14 +118,14 @@
             // matchingFromFolderToolStripMenuItem
             // 
             this.matchingFromFolderToolStripMenuItem.Name = "matchingFromFolderToolStripMenuItem";
-            this.matchingFromFolderToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.matchingFromFolderToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
             this.matchingFromFolderToolStripMenuItem.Text = "Matching from Folder";
             this.matchingFromFolderToolStripMenuItem.Click += new System.EventHandler(this.matchingFromFolderToolStripMenuItem_Click);
             // 
             // imageAnalysisToolStripMenuItem
             // 
             this.imageAnalysisToolStripMenuItem.Name = "imageAnalysisToolStripMenuItem";
-            this.imageAnalysisToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.imageAnalysisToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
             this.imageAnalysisToolStripMenuItem.Text = "Image Analysis";
             this.imageAnalysisToolStripMenuItem.Click += new System.EventHandler(this.imageAnalysisToolStripMenuItem_Click);
             // 
@@ -239,7 +241,7 @@
             this._cConfiguration.Location = new System.Drawing.Point(0, 0);
             this._cConfiguration.Name = "_cConfiguration";
             this._cConfiguration.ResetButtonVisible = true;
-            this._cConfiguration.SaveText = "Save file";
+            this._cConfiguration.ResetText = "Reset";
             this._cConfiguration.SelectionColor = System.Drawing.Color.DarkOrange;
             this._cConfiguration.Size = new System.Drawing.Size(1219, 676);
             this._cConfiguration.TabIndex = 4;
@@ -280,6 +282,22 @@
             this._cImageAnalysis.Size = new System.Drawing.Size(1108, 676);
             this._cImageAnalysis.TabIndex = 4;
             // 
+            // _cClassificationTrainning
+            // 
+            this._cClassificationTrainning.BackColor = System.Drawing.Color.Transparent;
+            this._cClassificationTrainning.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._cClassificationTrainning.Location = new System.Drawing.Point(0, 0);
+            this._cClassificationTrainning.Name = "_cClassificationTrainning";
+            this._cClassificationTrainning.Size = new System.Drawing.Size(1219, 676);
+            this._cClassificationTrainning.TabIndex = 0;
+            // 
+            // classificationTrainningToolStripMenuItem
+            // 
+            this.classificationTrainningToolStripMenuItem.Name = "classificationTrainningToolStripMenuItem";
+            this.classificationTrainningToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.classificationTrainningToolStripMenuItem.Text = "Classification Trainning";
+            this.classificationTrainningToolStripMenuItem.Click += new System.EventHandler(this.classificationTrainningToolStripMenuItem_Click);
+            // 
             // FormBilletrack
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -299,7 +317,6 @@
             this._ctopMenu.PerformLayout();
             this._cstatusMenu.ResumeLayout(false);
             this._cstatusMenu.PerformLayout();
-            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -326,6 +343,8 @@
         private System.Windows.Forms.ToolStripMenuItem matchingFromFolderToolStripMenuItem;
         private Forms.OfflineImageAnalysis _cImageAnalysis;
         private System.Windows.Forms.ToolStripMenuItem imageAnalysisToolStripMenuItem;
+        private Forms.ClassificationTrainning _cClassificationTrainning;
+        private System.Windows.Forms.ToolStripMenuItem classificationTrainningToolStripMenuItem;
     }
 }
 

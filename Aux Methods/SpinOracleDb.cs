@@ -5,6 +5,7 @@ using System.Text;
 using Oracle.DataAccess.Client;
 using System.Data;
 using System.Windows.Forms;
+using SpinPlatform.Errors;
 //using System.Data.OracleClient;
 
 namespace SpinPlatform.IO.DataBase
@@ -57,7 +58,8 @@ namespace SpinPlatform.IO.DataBase
             catch (OracleException e)
             {
                 // Do something
-                this._connected = false;   
+                this._connected = false;
+                throw new SpinException("SpinOracleDb: Error en metodo Start :" + e.Message);
             }
         }
 
@@ -70,11 +72,12 @@ namespace SpinPlatform.IO.DataBase
 
                 this._connected = false;
             }
-            catch (OracleException)
+            catch (OracleException e)
             {
                 // Do something
                 if (_dbConnection.State == ConnectionState.Open) this._connected = true;
                 else this._connected = false;
+                throw new SpinException("SpinOracleDb: Error en metodo Stop :" + e.Message);
             }
 
         }
@@ -84,8 +87,6 @@ namespace SpinPlatform.IO.DataBase
         {
             try
             {
-                this.Stop();
-                this.Start();
                 if (!this._connected) return false;
                 if (ProcedureParams.Length != ProcedureParamsValues.Length)
                 {
@@ -107,8 +108,9 @@ namespace SpinPlatform.IO.DataBase
                 
                 return true;
             }
-            catch (OracleException)
+            catch (OracleException e)
             {
+                throw new SpinException("SpinOracleDb: Error en metodo ProcedureCall :" + e.Message);
                 return false;
             }
                 
@@ -123,16 +125,22 @@ namespace SpinPlatform.IO.DataBase
         /// <returns>true if Insert succeeded, false in case or not connected or not inserted</returns>
         public bool InsertCall(string InsertQuery)
         {
-            this.Stop();
-            this.Start();
-            
-            if (!this._connected) return false;
-            this._dbCommand = new OracleCommand(InsertQuery, this._dbConnection);
-            int fieldsaffected=this._dbCommand.ExecuteNonQuery();
-            this._dbCommand.Dispose();
-           
-            
-            return (fieldsaffected > 0);
+
+            try
+            {
+                if (!this._connected) return false;
+                this._dbCommand = new OracleCommand(InsertQuery, this._dbConnection);
+                int fieldsaffected = this._dbCommand.ExecuteNonQuery();
+                this._dbCommand.Dispose();
+
+
+                return (fieldsaffected > 0);
+            }
+            catch (Exception E)
+            {
+
+                throw new SpinException("SpinOracleDb: Error en metodo InsertCall" + E.Message);
+            }
          }
 
 
@@ -145,18 +153,24 @@ namespace SpinPlatform.IO.DataBase
         /// <returns>the value of the primary key for the inserted row</returns>
         public int InsertCallReturninId(string InsertQuery,string FieldId)
         {
-            this.Stop();
-            this.Start();
-            InsertQuery += " RETURNING " + FieldId + " into :returnedID";
+            try
+            {
+                InsertQuery += " RETURNING " + FieldId + " into :returnedID";
 
-            if (!this._connected) return 0;
-            this._dbCommand = new OracleCommand(InsertQuery, this._dbConnection);
-            this._dbCommand.Parameters.Add("returnedID", OracleDbType.Int32, ParameterDirection.ReturnValue);
-            this._dbCommand.ExecuteNonQuery();
-            int id = Int32.Parse(this._dbCommand.Parameters["returnedID"].Value.ToString());
-            this._dbCommand.Dispose();
-           
-            return id;
+                if (!this._connected) return 0;
+                this._dbCommand = new OracleCommand(InsertQuery, this._dbConnection);
+                this._dbCommand.Parameters.Add("returnedID", OracleDbType.Int32, ParameterDirection.ReturnValue);
+                this._dbCommand.ExecuteNonQuery();
+                int id = Int32.Parse(this._dbCommand.Parameters["returnedID"].Value.ToString());
+                this._dbCommand.Dispose();
+
+                return id;
+            }
+            catch (Exception e)
+            {
+                
+                throw new SpinException("SpinOracleDb: Error en metodo InsertCallReturningId :" + e.Message);
+            }
         }
 
 
@@ -176,28 +190,40 @@ namespace SpinPlatform.IO.DataBase
         /// <returns>Un Objeto OracleDataReader con los valores retornados (null en caso de error)</returns>
         public OracleDataReader SelectCall(string SelectQuery)
         {
-            this.Stop();
-            this.Start();
-            if (!this._connected) return null;
-            this._dbCommand = new OracleCommand(SelectQuery, this._dbConnection);
-            this._dbCommand.CommandType = CommandType.Text;
-            
-            OracleDataReader dr = _dbCommand.ExecuteReader();
-            this._dbCommand.Dispose();
-           
-            return dr;
+            try
+            {
+                if (!this._connected) return null;
+                this._dbCommand = new OracleCommand(SelectQuery, this._dbConnection);
+                this._dbCommand.CommandType = CommandType.Text;
+
+                OracleDataReader dr = _dbCommand.ExecuteReader();
+                this._dbCommand.Dispose();
+
+                return dr;
+            }
+            catch (Exception e)
+            {
+                
+                throw new SpinException("SpinOracleDb: Error en metodo SelectCall :" + e.Message);
+            }
         }
 
         public bool UpdateCall(string UpdateQuery)
         {
-            this.Stop();
-            this.Start();
-            if (!this._connected) return false;
-            this._dbCommand = new OracleCommand(UpdateQuery, this._dbConnection);
-            int retorno = this._dbCommand.ExecuteNonQuery();
-            this._dbCommand.Dispose();
-            
-            return ( retorno > 0);
+            try
+            {
+                if (!this._connected) return false;
+                this._dbCommand = new OracleCommand(UpdateQuery, this._dbConnection);
+                int retorno = this._dbCommand.ExecuteNonQuery();
+                this._dbCommand.Dispose();
+
+                return (retorno > 0);
+            }
+            catch (Exception e)
+            {
+                
+                throw new SpinException("SpinOracleDb: Error en metodo UpdateCall :" + e.Message);
+            }
          }
 
         public int DeleteCall(string DeleteQuery)
@@ -207,7 +233,20 @@ namespace SpinPlatform.IO.DataBase
 
         public bool NonQueryCall(string NonQuery)
         {
-            return true;
+            try
+            {
+                if (!this._connected) return false;
+                this._dbCommand = new OracleCommand(NonQuery, this._dbConnection);
+                int retorno = this._dbCommand.ExecuteNonQuery();
+                this._dbCommand.Dispose();
+
+                return (retorno > 0);
+            }
+            catch (Exception e)
+            {
+
+                throw new SpinException("SpinOracleDb: Error en metodo NonQueryCall :" + e.Message);
+            }
         }
 
 

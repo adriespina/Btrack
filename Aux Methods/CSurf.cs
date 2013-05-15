@@ -16,7 +16,7 @@ using System.Threading;
 
 namespace Billetrack
 {
-    class resultMatching
+    public class resultMatching
     {
         public float quality;
         public float quality_surf;
@@ -33,6 +33,7 @@ namespace Billetrack
         public bool bHomographyOK;
         public int npoints_Homography;
         public int npoints_Homography_inside;
+        public int npoints_included_homography;
         public bool bFailToCalculate;		///< The object could no calculated because there was no image,keypoints and descriptors
 
         public resultMatching()
@@ -110,94 +111,101 @@ namespace Billetrack
         public double Max(double x, double y) { return x > y ? x : y; }
         public int InsidePolygon(_Point[] polygon, int N, _Point p, int bound)
         {
-            //cross points count of x
-            int __count = 0;
-
-            //neighbour bound vertices
-            _Point p1, p2;
-
-            //left vertex
-            p1 = polygon[0];
-
-            //check all rays
-            for (int i = 1; i <= N; ++i)
+            try
             {
-                //point is an vertex
-                if (p == p1) return bound;
+                //cross points count of x
+                int __count = 0;
 
-                //right vertex
-                p2 = polygon[i % N];
+                //neighbour bound vertices
+                _Point p1, p2;
 
-                //ray is outside of our interests
-                if (p.y < Min(p1.y, p2.y) || p.y > Max(p1.y, p2.y))
+                //left vertex
+                p1 = polygon[0];
+
+                //check all rays
+                for (int i = 1; i <= N; ++i)
                 {
+                    //point is an vertex
+                    if (p == p1) return bound;
+
+                    //right vertex
+                    p2 = polygon[i % N];
+
+                    //ray is outside of our interests
+                    if (p.y < Min(p1.y, p2.y) || p.y > Max(p1.y, p2.y))
+                    {
+                        //next ray left point
+                        p1 = p2; continue;
+                    }
+
+                    //ray is crossing over by the algorithm (common part of)
+                    if (p.y > Min(p1.y, p2.y) && p.y < Max(p1.y, p2.y))
+                    {
+                        //x is before of ray
+                        if (p.x <= Max(p1.x, p2.x))
+                        {
+                            //overlies on a horizontal ray
+                            if (p1.y == p2.y && p.x >= Min(p1.x, p2.x)) return bound;
+
+                            //ray is vertical
+                            if (p1.x == p2.x)
+                            {
+                                //overlies on a ray
+                                if (p1.x == p.x) return bound;
+                                //before ray
+                                else ++__count;
+                            }
+
+                            //cross point on the left side
+                            else
+                            {
+                                //cross point of x
+                                double xinters = (p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x;
+
+                                //overlies on a ray
+                                if (Math.Abs((p.x - xinters)) < __DBL_EPSILON__) return bound;
+
+                                //before ray
+                                if (p.x < xinters) ++__count;
+                            }
+                        }
+                    }
+                    //special case when ray is crossing through the vertex
+                    else
+                    {
+                        //p crossing over p2
+                        if (p.y == p2.y && p.x <= p2.x)
+                        {
+                            //next vertex
+                            _Point p3 = new _Point((double)(polygon[(i + 1) % N].x), (double)(polygon[(i + 1) % N].y));
+
+                            //p.y lies between p1.y & p3.y
+                            if (p.y >= Min(p1.y, p3.y) && p.y <= Max(p1.y, p3.y))
+                            {
+                                ++__count;
+                            }
+                            else
+                            {
+                                __count += 2;
+                            }
+                        }
+                    }
+
                     //next ray left point
-                    p1 = p2; continue;
+                    p1 = p2;
                 }
 
-                //ray is crossing over by the algorithm (common part of)
-                if (p.y > Min(p1.y, p2.y) && p.y < Max(p1.y, p2.y))
-                {
-                    //x is before of ray
-                    if (p.x <= Max(p1.x, p2.x))
-                    {
-                        //overlies on a horizontal ray
-                        if (p1.y == p2.y && p.x >= Min(p1.x, p2.x)) return bound;
+                //EVEN
+                if (__count % 2 == 0) return (OUTSIDE);
+                //ODD
+                else return (INSIDE);
 
-                        //ray is vertical
-                        if (p1.x == p2.x)
-                        {
-                            //overlies on a ray
-                            if (p1.x == p.x) return bound;
-                            //before ray
-                            else ++__count;
-                        }
 
-                        //cross point on the left side
-                        else
-                        {
-                            //cross point of x
-                            double xinters = (p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x;
-
-                            //overlies on a ray
-                            if (Math.Abs((p.x - xinters)) < __DBL_EPSILON__) return bound;
-
-                            //before ray
-                            if (p.x < xinters) ++__count;
-                        }
-                    }
-                }
-                //special case when ray is crossing through the vertex
-                else
-                {
-                    //p crossing over p2
-                    if (p.y == p2.y && p.x <= p2.x)
-                    {
-                        //next vertex
-                        _Point p3 = new _Point((double)(polygon[(i + 1) % N].x), (double)(polygon[(i + 1) % N].y));
-
-                        //p.y lies between p1.y & p3.y
-                        if (p.y >= Min(p1.y, p3.y) && p.y <= Max(p1.y, p3.y))
-                        {
-                            ++__count;
-                        }
-                        else
-                        {
-                            __count += 2;
-                        }
-                    }
-                }
-
-                //next ray left point
-                p1 = p2;
             }
-
-            //EVEN
-            if (__count % 2 == 0) return (OUTSIDE);
-            //ODD
-            else return (INSIDE);
-
-
+            catch (Exception e)
+            {
+                 throw new SpinPlatform.Errors.SpinException("InsidePoly: InsidePoly(Constructor) : " + e.Message);
+            }
         }
     }
 
@@ -231,8 +239,8 @@ namespace Billetrack
     {
 
         public const int MARGEN_PIXELS = 10;
-        public const string EXTENSION_KEYPOINTS = ".KEYPOINTS";
-        public const string EXTENSION_DESCRIPTORS = ".DESCRIPTORS";
+        public const string EXTENSION_KEYPOINTS = ".KEYPOINTS2";
+        public const string EXTENSION_DESCRIPTORS = ".DESCRIPTORS2";
         public const int SURF_SIZE_WINDOW_WITH = 640;
         public const int SURF_SIZE_WINDOW_HEIGHT = 480;
         public const int TYPE_CORRESPOND_ALL = 1;
@@ -260,106 +268,129 @@ namespace Billetrack
         Image<Gray, byte> m_image;     
         configurationSurf m_config;       
         bool m_bIsInitiated;
-        System.Threading.Mutex  locker1, locker2, locker3, locker4; 
+        System.Threading.Mutex  locker1, locker2, locker3, locker4;
+        int m_point_included_homography;
 
         //metodos privados
 
         bool PrivateInit(double hessianThreshold = DEFAUL_HESSIANTHRESHOLD)
         {
+            try
+            {
 
 
-            //m_pimage=new Image<Gray,byte>(  No la inizializo todavia
-            m_pKeyPoints = new VectorOfKeyPoint();
-            m_pDescriptors = new Matrix<float>(1, 1);
-            surfCPU = new SURFDetector(hessianThreshold, false);
-         
-            m_src_corners = new Point[4];
-            m_pPairs = new List<int>();
-            m_pDist = new List<float>();
-            m_pPairs.Clear();
-            m_pDist.Clear();
-            m_pPairsInside = new List<int>();
-            m_pPairsBelongHomography = new List<int>();
-            m_bIsInitiated = false;
+                //m_pimage=new Image<Gray,byte>(  No la inizializo todavia
+                m_pKeyPoints = new VectorOfKeyPoint();
+                m_pDescriptors = new Matrix<float>(1, 1);
+                surfCPU = new SURFDetector(hessianThreshold, false);
+
+                m_src_corners = new Point[4];
+                m_pPairs = new List<int>();
+                m_pDist = new List<float>();
+                m_pPairs.Clear();
+                m_pDist.Clear();
+                m_pPairsInside = new List<int>();
+                m_pPairsBelongHomography = new List<int>();
+                m_bIsInitiated = false;
+                m_point_included_homography = 0;
 
 
-            m_config = new configurationSurf();
-            m_config.hessianThreshold = hessianThreshold;
-            m_config.ignoreBlackPoints = true;
-            m_config.removeBlackPoints = true;
-           
-            m_params = new MCvSURFParams(hessianThreshold, true);
-            m_MatrixHomographyMat = new HomographyMatrix();
-            m_resultMatching = new resultMatching();
+                m_config = new configurationSurf();
+                m_config.hessianThreshold = hessianThreshold;
+                m_config.ignoreBlackPoints = true;
+                m_config.removeBlackPoints = true;
 
-            locker1 = new System.Threading.Mutex();
-            locker2 = new System.Threading.Mutex();
-            locker3 = new System.Threading.Mutex();
-            locker4 = new System.Threading.Mutex();
-           
-            
-           
+                m_params = new MCvSURFParams(hessianThreshold, true);
+                m_MatrixHomographyMat = new HomographyMatrix();
+                m_resultMatching = new resultMatching();
 
-               return true;
+                locker1 = new System.Threading.Mutex();
+                locker2 = new System.Threading.Mutex();
+                locker3 = new System.Threading.Mutex();
+                locker4 = new System.Threading.Mutex();
+
+
+
+
+                return true;
+            }
+            catch (Exception e)
+            {
+              throw new SpinPlatform.Errors.SpinException("CSurf: PrivateInit : " + e.Message);
+            }
 
         }
        public void Clean()
         {
-            if (m_pKeyPoints!=null) m_pKeyPoints.Dispose();
-            if (m_pDescriptors != null) m_pDescriptors.Dispose();
-            if (surfCPU != null) surfCPU.Dispose();
-            if (m_pPairs != null) m_pPairs.Clear();
-            if (m_pDist != null) m_pDist.Clear();
-             m_bIsInitiated = false;
-            if (m_MatrixHomographyMat != null) m_MatrixHomographyMat.Dispose();
-            if (m_image!=null) m_image.Dispose();
-            if (m_pPairsInside != null) m_pPairsInside.Clear();
-            if (m_pPairsBelongHomography != null) m_pPairsBelongHomography.Clear();
+            try
+            {
+                if (m_pKeyPoints != null) m_pKeyPoints.Dispose();
+                if (m_pDescriptors != null) m_pDescriptors.Dispose();
+                if (surfCPU != null) surfCPU.Dispose();
+                if (m_pPairs != null) m_pPairs.Clear();
+                if (m_pDist != null) m_pDist.Clear();
+                m_bIsInitiated = false;
+                if (m_MatrixHomographyMat != null) m_MatrixHomographyMat.Dispose();
+                if (m_image != null) m_image.Dispose();
+                if (m_pPairsInside != null) m_pPairsInside.Clear();
+                if (m_pPairsBelongHomography != null) m_pPairsBelongHomography.Clear();
+            }
+            catch (Exception e)
+            {
+                throw new SpinPlatform.Errors.SpinException("CSurf: Clean : " + e.Message);
+            }
            
         }
         void RemoveBadKeyPoints()
         {
 
-            if (m_image.Ptr == null)
-                return;
-            int N = m_pKeyPoints.Size;
-            Point center = new Point();
-            int radius;
-            int i = 0;
-            using (Image<Gray, byte> mask = new Image<Gray, byte>(m_image.Width, m_image.Height))
+            try
             {
-                mask.SetValue(255);
-                foreach (MKeyPoint r in m_pKeyPoints.ToArray())
+                if (m_image.Ptr == null)
+                    return;
+                int N = m_pKeyPoints.Size;
+                Point center = new Point();
+                int radius;
+                int i = 0;
+                using (Image<Gray, byte> mask = new Image<Gray, byte>(m_image.Width, m_image.Height))
                 {
-
-
-                    center.X = (int)Math.Round(r.Point.X);
-                    center.Y = (int)Math.Round(r.Point.Y);
-                    radius = (int)Math.Round(r.Size * 1.2 / 9 * 2);
-
-                    int grayvalue1 = (int)m_image[center.Y, center.X].Intensity;
-                    int grayvalue2 = (int)m_image[center.Y, center.X + radius].Intensity;
-                    int grayvalue3 = (int)m_image[center.Y, center.X - radius].Intensity;
-                    int grayvalue4 = (int)m_image[center.Y - radius, center.X - radius].Intensity;
-                    int grayvalue5 = (int)m_image[center.Y - radius, center.X + radius].Intensity;
-                    int grayvalue6 = (int)m_image[center.Y - radius, center.X].Intensity;
-                    int grayvalue7 = (int)m_image[center.Y + radius, center.X - radius].Intensity;
-                    int grayvalue8 = (int)m_image[center.Y + radius, center.X + radius].Intensity;
-                    int grayvalue9 = (int)m_image[center.Y + radius, center.X].Intensity;
-                    if (grayvalue1 == 0 || grayvalue2 == 0 || grayvalue3 == 0 || grayvalue4 == 0 || grayvalue5 == 0 || grayvalue6 == 0 || grayvalue7 == 0 || grayvalue8 == 0 || grayvalue9 == 0)
+                    mask.SetValue(255);
+                    foreach (MKeyPoint r in m_pKeyPoints.ToArray())
                     {
-                        mask[center] = new Gray(0);
-                        m_pDescriptors = m_pDescriptors.RemoveRows(i, i + 1);
-                        //CvInvoke.cvSeqRemove(m_pDescriptors.Ptr,i);
-                        //CvInvoke.cvSeqRemove(m_pKeyPoints.Ptr,i);
-                        N--;
-                        i--;
 
+
+                        center.X = (int)Math.Round(r.Point.X);
+                        center.Y = (int)Math.Round(r.Point.Y);
+                        radius = (int)Math.Round(r.Size * 1.2 / 9 * 2);
+
+                        int grayvalue1 = (int)m_image[center.Y, center.X].Intensity;
+                        int grayvalue2 = (int)m_image[center.Y, center.X + radius].Intensity;
+                        int grayvalue3 = (int)m_image[center.Y, center.X - radius].Intensity;
+                        int grayvalue4 = (int)m_image[center.Y - radius, center.X - radius].Intensity;
+                        int grayvalue5 = (int)m_image[center.Y - radius, center.X + radius].Intensity;
+                        int grayvalue6 = (int)m_image[center.Y - radius, center.X].Intensity;
+                        int grayvalue7 = (int)m_image[center.Y + radius, center.X - radius].Intensity;
+                        int grayvalue8 = (int)m_image[center.Y + radius, center.X + radius].Intensity;
+                        int grayvalue9 = (int)m_image[center.Y + radius, center.X].Intensity;
+                        if (grayvalue1 == 0 || grayvalue2 == 0 || grayvalue3 == 0 || grayvalue4 == 0 || grayvalue5 == 0 || grayvalue6 == 0 || grayvalue7 == 0 || grayvalue8 == 0 || grayvalue9 == 0)
+                        {
+                            mask[center] = new Gray(0);
+                            m_pDescriptors = m_pDescriptors.RemoveRows(i, i + 1);
+                            //CvInvoke.cvSeqRemove(m_pDescriptors.Ptr,i);
+                            //CvInvoke.cvSeqRemove(m_pKeyPoints.Ptr,i);
+                            N--;
+                            i--;
+
+                        }
+
+                        i++;
                     }
-
-                    i++;
+                    m_pKeyPoints.FilterByPixelsMask(mask);
                 }
-                m_pKeyPoints.FilterByPixelsMask(mask);
+            }
+            catch (Exception e)
+            {
+                throw new SpinPlatform.Errors.SpinException("CSurf: RemoveBadKeyPoints : " + e.Message);
             }
         }
 
@@ -367,69 +398,121 @@ namespace Billetrack
 
         public CSurf()
         {
-            PrivateInit();
+            try
+            {
+                PrivateInit();
+            }
+            catch (Exception e)
+            {
+                
+                throw new SpinPlatform.Errors.SpinException("CSurf: CSurf(Constructor) : " + e.Message);
+            }
         }
         public CSurf(Image<Gray, byte> image, double hessianThreshold = DEFAUL_HESSIANTHRESHOLD)
         {
-            PrivateInit(hessianThreshold);
-            InitFromImg(image, hessianThreshold);
+            try
+            {
+                PrivateInit(hessianThreshold);
+                InitFromImg(image, hessianThreshold);
+            }
+            catch (Exception e)
+            {
+              throw new SpinPlatform.Errors.SpinException("CSurf: CSurf(Constructor) : " + e.Message);
+            }
         }
         public CSurf(string filename, int imagewidth, int imageheight)
         {
-            PrivateInit();
-            SetCorners(imagewidth, imageheight);
-            m_bIsInitiated = Load(filename);
-            object locker = new object();
+            try
+            {
+                PrivateInit();
+                SetCorners(imagewidth, imageheight);
+                m_bIsInitiated = Load(filename);
+                object locker = new object();
+            }
+            catch (Exception e)
+            {
+               throw new SpinPlatform.Errors.SpinException("CSurf: CSurf(Constructor) : " + e.Message);
+            }
         }
-        public CSurf(string filename)  {
-            PrivateInit();
-            m_image = new Image<Gray, byte>(filename);
-            InitFromImg(m_image);
+        public CSurf(string filename)
+        {
+            try
+            {
+                PrivateInit();
+                m_image = new Image<Gray, byte>(filename);
+                InitFromImg(m_image);
+            }
+            catch (Exception e)
+            {
+               throw new SpinPlatform.Errors.SpinException("CSurf: CSurf(Constructor) : " + e.Message);
+            }
         }
         public void InitFromImg(Image<Gray, byte> image, double hessianThreshold = DEFAUL_HESSIANTHRESHOLD)
         {
+            try
+            {
 
-            SetCorners(image.Width, image.Height);
-            m_image = image.Clone();
-            m_pDescriptors.Dispose();
-            m_pDescriptors = surfCPU.DetectAndCompute(image, null, m_pKeyPoints);
-            if (m_config.removeBlackPoints)
-                RemoveBadKeyPoints();
-            m_bIsInitiated = true;
+                SetCorners(image.Width, image.Height);
+                m_image = image.Clone();
+                m_pDescriptors.Dispose();
+                m_pDescriptors = surfCPU.DetectAndCompute(image, null, m_pKeyPoints);
+                if (m_config.removeBlackPoints)
+                    RemoveBadKeyPoints();
+                m_bIsInitiated = true;
 
+            }
+            catch (Exception e)
+            {
+                throw new SpinPlatform.Errors.SpinException("CSurf: InitFromImg : " + e.Message);
+            }
         }
         public void SetCorners(int width, int height)
         {
+            try
+            {
 
-            m_src_corners[0].X = 0;
-            m_src_corners[0].Y = 0;
-            m_src_corners[1].X = width;
-            m_src_corners[1].Y = 0;
-            m_src_corners[2].X = width;
-            m_src_corners[2].Y = height;
-            m_src_corners[3].X = 0;
-            m_src_corners[3].Y = height;
+                m_src_corners[0].X = 0;
+                m_src_corners[0].Y = 0;
+                m_src_corners[1].X = width;
+                m_src_corners[1].Y = 0;
+                m_src_corners[2].X = width;
+                m_src_corners[2].Y = height;
+                m_src_corners[3].X = 0;
+                m_src_corners[3].Y = height;
+            }
+            catch (Exception e)
+            {
+                
+                 throw new SpinPlatform.Errors.SpinException("CSurf: SetCorners : " + e.Message);
+            }
         }
         public bool Save(string filename)
         {
+            try
+            {
 
-            if (!SaveDescriptors2(filename))
-                return false;
-            if (!SaveKeyPoints(filename))
-                return false;
-            //Logging("Fin de escrituta de Key\n");
-            return true;
+                if (!SaveDescriptors2(filename))
+                    return false;
+                if (!SaveKeyPoints(filename))
+                    return false;
+                //Logging("Fin de escrituta de Key\n");
+                return true;
+            }
+            catch (Exception e)
+            {
+                throw new SpinPlatform.Errors.SpinException("CSurf: Save : " + e.Message);
+            }
         }
         bool SaveDescriptors(string filename, bool overwrite = true)
         {
-
+ try
+            {
             filename = filename+ EXTENSION_DESCRIPTORS;
 
             if (overwrite == false && File.Exists(filename)) return false;
             //File.Create(filename);//Create the file.
 
-            try
-            {
+           
                 using (StreamWriter sw = new StreamWriter(filename))
                 {
                     //write the length of each descriptor
@@ -458,19 +541,18 @@ namespace Billetrack
             }
             catch (Exception ex)
             {
-                return false;
-               
+                throw new SpinPlatform.Errors.SpinException("CSurf: SaveDescriptors : " + ex.Message);
             }
 
         }
         bool SaveKeyPoints(string filename, bool overwrite = true)
         {
-
+ try
+            {
             filename = filename  + EXTENSION_KEYPOINTS;
             if (overwrite == false && File.Exists(filename)) return false;
 
-            try
-            {
+           
                 using (StreamWriter sw = new StreamWriter(filename))
                 {
                     //write the number of descriptors
@@ -487,15 +569,15 @@ namespace Billetrack
                 }
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                return false;
+                throw new SpinPlatform.Errors.SpinException("CSurf: SaveKeyPoints : " + ex.Message);
             }
         }
         bool SaveDescriptors2(string filename, bool overwrite = true)
         {
-
+ try
+            {
             filename = filename + EXTENSION_DESCRIPTORS;
 
             if (overwrite == false && File.Exists(filename)) return false;
@@ -505,8 +587,7 @@ namespace Billetrack
             System.IO.Stream stream;
             BinaryFormatter bformatter;
             // Open the saved histogram
-            try
-            {
+           
                
                 locker1.WaitOne();
                       // serialize histogram
@@ -521,22 +602,21 @@ namespace Billetrack
 
             catch (Exception ex)
             {
-                return false;
-
+                throw new SpinPlatform.Errors.SpinException("CSurf: SaveDescriptors2 : " + ex.Message);
             }
 
         }
         bool SaveKeyPoints2(string filename, bool overwrite = true)
         {
-
+ try
+            { 
             filename = filename + EXTENSION_KEYPOINTS;
             if (overwrite == false && File.Exists(filename)) return false;
 
             System.IO.Stream stream;
             BinaryFormatter bformatter;
             // Open the saved histogram
-            try
-            {  
+            
                 locker2.WaitOne();
                       // serialize histogram
                       stream = File.Open(filename, FileMode.Create);
@@ -546,46 +626,52 @@ namespace Billetrack
                       locker2.ReleaseMutex();
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-
-                return false;
+                throw new SpinPlatform.Errors.SpinException("CSurf: SaveKeyPoints2 : " + e.Message);
             }
         }
         public bool Load(string filename)
         {
 
-            if (!LoadDescriptors2(filename))
+            try
             {
-                //No hay ficheros de descriptores, los volvemos a crear
-                m_image = new Image<Gray, byte>(filename);
-                if (m_image.Ptr == null)
-                    return false;	//No image file found
-                InitFromImg(m_image);
-                if (!Save(filename))
-                    return false;
-                return true;
-            }
-            if (!LoadKeyPoints(filename))
-            {
-                //No hay ficheros de keys, los volvemos a crear
-                m_image = new Image<Gray, byte>(filename);
-                if (m_image.Ptr == null)
-                    return false;	//No image file found
-                InitFromImg(m_image);
-                if (!Save(filename))
-                    return false;
-                return true;
-            }
+                if (!LoadDescriptors2(filename))
+                {
+                    //No hay ficheros de descriptores, los volvemos a crear
+                    m_image = new Image<Gray, byte>(filename);
+                    if (m_image.Ptr == null)
+                        return false;	//No image file found
+                    InitFromImg(m_image);
+                    if (!Save(filename))
+                        return false;
+                    return true;
+                }
+                if (!LoadKeyPoints(filename))
+                {
+                    //No hay ficheros de keys, los volvemos a crear
+                    m_image = new Image<Gray, byte>(filename);
+                    if (m_image.Ptr == null)
+                        return false;	//No image file found
+                    InitFromImg(m_image);
+                    if (!Save(filename))
+                        return false;
+                    return true;
+                }
 
-            return true;
+                return true;
+            }
+            catch (Exception e)
+            {
+                throw new SpinPlatform.Errors.SpinException("CSurf: Load : " + e.Message);
+            }
         }
         bool LoadDescriptors(string filename)
         {
-
-            filename = filename + EXTENSION_DESCRIPTORS;
-            try
+try
             {
+            filename = filename + EXTENSION_DESCRIPTORS;
+            
                 using (StreamReader sw = new StreamReader(filename))
                 {
                     //read the length of each descriptor
@@ -627,17 +713,18 @@ namespace Billetrack
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
 
-                return false;
+                throw new SpinPlatform.Errors.SpinException("CSurf: LoadDescriptors : " + e.Message);
             }
         }
         bool LoadKeyPoints(string filename)
         {
-            filename = filename + EXTENSION_KEYPOINTS;
             try
             {
+            filename = filename + EXTENSION_KEYPOINTS;
+            
                 using (StreamReader sw = new StreamReader(filename))
                 {
                     //read the number of descriptors
@@ -677,23 +764,22 @@ namespace Billetrack
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-
-                return false;
+                throw new SpinPlatform.Errors.SpinException("CSurf: LoadKeyPoints : " + e.Message);
             }
 
         }
         bool LoadDescriptors2(string filename)
         {
-
+ try
+            {
             filename = filename +  EXTENSION_DESCRIPTORS;
             System.IO.Stream stream;
             BinaryFormatter bformatter;
            
             // Open the saved histogram
-            try
-            {
+           
                 if (File.Exists(filename))
                 {  
                     locker3.WaitOne();
@@ -706,19 +792,20 @@ namespace Billetrack
                 }
                 return true;
             }
-            catch (Exception exp)
+            catch (Exception e)
             {
-                return false;
+                throw new SpinPlatform.Errors.SpinException("CSurf: LoadDescriptors2 : " + e.Message);
             }
           
         }
         bool LoadKeyPoints2(string filename)
         {
+            try
+            {
             filename = filename +  EXTENSION_KEYPOINTS;
             System.IO.Stream stream;
             BinaryFormatter bformatter;
-            try
-            {
+            
                 if (File.Exists(filename))
                 {
                      locker4.WaitOne();
@@ -732,359 +819,408 @@ namespace Billetrack
                 else return false;
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
-
-                return false;
+                throw new SpinPlatform.Errors.SpinException("CSurf: LoadKeyPoints2 : " + e.Message);
             }
 
         }
         public bool OnlyLoadImage(string filename)
         {
-
-            m_image = new Image<Gray, byte>(filename);
-
-            if (m_image.Ptr != null)
+            try
             {
-                if (m_pKeyPoints.Ptr != null && m_config.ignoreBlackPoints)
-                    RemoveBadKeyPoints();
-                return true;
+
+                m_image = new Image<Gray, byte>(filename);
+
+                if (m_image.Ptr != null)
+                {
+                    if (m_pKeyPoints.Ptr != null && m_config.ignoreBlackPoints)
+                        RemoveBadKeyPoints();
+                    return true;
+                }
+                else return false;
             }
-            else return false;
+            catch (Exception e)
+            {
+                throw new SpinPlatform.Errors.SpinException("CSurf: OnlyLoadImage : " + e.Message);
+            }
         }
         public int Matching(CSurf Image, ref Point[] dst_corners, out double MatchingQuality, out resultMatching pResult, int modo = MODE_CESAR)
         {
-         
-            pResult = new resultMatching();            
-            m_resultMatching.Init();
 
-            if (m_pDescriptors.Rows == 0 || Image.m_pDescriptors.Rows == 0)
+            try
             {
-                //Nothing to do, we must return with error
-                MatchingQuality = 0.0;
-                for (int k = 0; k < 4; k++)
+                pResult = new resultMatching();
+                m_resultMatching.Init();
+
+                if (m_pDescriptors.Rows == 0 || Image.m_pDescriptors.Rows == 0)
                 {
-                    dst_corners[k].X = -1;
-                    dst_corners[k].Y = -1;
+                    //Nothing to do, we must return with error
+                    MatchingQuality = 0.0;
+                    for (int k = 0; k < 4; k++)
+                    {
+                        dst_corners[k].X = -1;
+                        dst_corners[k].Y = -1;
+                    }
+
+                    return -1;
                 }
 
-                return -1;
-            }
+                //  FlannFindPairs(Image);
+                FlannFindPairs(Image);
 
-            //  FlannFindPairs(Image);
-            FlannFindPairs(Image);
-
-            if (LocatePlanarObject(Image, ref dst_corners,modo))
-            {
-                int tmpcuenta = 0;
-                for (int i = 0; i < 4; i++)
+                if (LocatePlanarObject(Image, ref dst_corners, modo))
                 {
-                    if (IsInside(Image.m_src_corners, dst_corners[i]))
-                        tmpcuenta++;
+                    int tmpcuenta = 0;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (IsInside(Image.m_src_corners, dst_corners[i]))
+                            tmpcuenta++;
 
-                }
-                if (tmpcuenta != 4)
-                {
-                    m_resultMatching.bdst_corners_inside = false;
-                    m_resultMatching.bHomographyOK = true;
+                    }
+                    if (tmpcuenta != 4)
+                    {
+                        m_resultMatching.bdst_corners_inside = false;
+                        m_resultMatching.bHomographyOK = true;
+                    }
+                    else
+                    {
+
+                        m_resultMatching.bdst_corners_inside = true;
+                        m_resultMatching.bHomographyOK = true;
+                    }
                 }
                 else
                 {
 
-                    m_resultMatching.bdst_corners_inside = true;
-                    m_resultMatching.bHomographyOK = true;
+                    m_resultMatching.bHomographyOK = false;
+                    for (int k = 0; k < 4; k++)
+                    {
+                        dst_corners[k].X = -1;
+                        dst_corners[k].Y = -1;
+                    }
                 }
+                MatchingQuality = CalcularCoeficientes(Image, dst_corners);
+                pResult = m_resultMatching;
+                return 1;
             }
-            else
+            catch (Exception e)
             {
-
-                m_resultMatching.bHomographyOK = false;
-                for (int k = 0; k < 4; k++)
-                {
-                    dst_corners[k].X = -1;
-                    dst_corners[k].Y = -1;
-                }
+                throw new SpinPlatform.Errors.SpinException("CSurf: Matching : " + e.Message);
             }
-            MatchingQuality = CalcularCoeficientes(Image, dst_corners);
-            pResult = m_resultMatching;
-            return 1;
 
         }
         private double CalcularCoeficientes(CSurf Image, Point[] dst_corners)
         {
-            double MatchingQuality;
-            int cuenta = 0;
-
-            int max_x = -1;
-            int max_y = -1;
-            int min_x = 100000;
-            int min_y = 100000;
-            Point center_object = new Point(), center_image = new Point();
-            Point image_homagraphy_transform;
-
-            for (int i = 0; i < (int)m_pPairs.Count; i += 2)
+            try
             {
+                double MatchingQuality;
+                int cuenta = 0;
 
-                if (m_pPairs[i]<m_pKeyPoints.Size&&m_pPairs[i+1]<m_pKeyPoints.Size)
+                int max_x = -1;
+                int max_y = -1;
+                int min_x = 100000;
+                int min_y = 100000;
+                Point center_object = new Point(), center_image = new Point();
+                Point image_homagraphy_transform;
+
+                for (int i = 0; i < (int)m_pPairs.Count; i += 2)
+                {
+
+                    if (m_pPairs[i] < m_pKeyPoints.Size && m_pPairs[i + 1] < m_pKeyPoints.Size)
+                    {
+                        MKeyPoint r1 = m_pKeyPoints[m_pPairs[i]];
+                        MKeyPoint r2 = m_pKeyPoints[m_pPairs[i + 1]];
+
+
+                        if (IsInside(dst_corners, new Point((int)r2.Point.X, (int)r2.Point.Y)))
+                        {
+                            m_pPairsInside.Add((m_pPairs[i]));
+                            m_pPairsInside.Add((m_pPairs[i + 1]));
+                            cuenta++;
+                        }
+
+                        center_object.X = (int)Math.Round(r1.Point.X);
+                        center_object.Y = (int)Math.Round(r1.Point.Y);
+                        center_image.X = (int)Math.Round(r2.Point.X);
+                        center_image.Y = (int)Math.Round(r2.Point.Y);
+                        image_homagraphy_transform = AplyHomography(center_object.X, center_object.Y);
+
+                        if (Math.Abs(center_image.X - image_homagraphy_transform.X) <= MARGEN_PIXELS && Math.Abs(center_image.Y - image_homagraphy_transform.Y) <= MARGEN_PIXELS)
+                        {
+                            //keypoint contribute to the correct homograpy
+                            m_pPairsBelongHomography.Add(m_pPairs[i]);
+                            m_pPairsBelongHomography.Add(m_pPairs[i + 1]);
+                            if ((int)r1.Point.X > max_x)
+                                max_x = (int)r1.Point.X;
+                            if ((int)r1.Point.Y > max_y)
+                                max_y = (int)r1.Point.Y;
+                            if ((int)r1.Point.X < min_x)
+                                min_x = (int)r1.Point.Y;
+                            if ((int)r1.Point.Y < min_y)
+                                min_y = (int)r1.Point.Y;
+                        }
+                    }
+
+                }
+
+                double x = min_x;
+                double y = min_y;
+                m_resultMatching.dst_corners_local[0] = AplyHomography(x, y);
+
+                x = max_x; y = min_y;
+                m_resultMatching.dst_corners_local[1] = AplyHomography(x, y);
+
+                x = max_x; y = max_y;
+                m_resultMatching.dst_corners_local[2] = AplyHomography(x, y);
+
+                x = min_x; y = max_y;
+                m_resultMatching.dst_corners_local[3] = AplyHomography(x, y);
+
+
+                int cuentaInsideHomography = 0;
+                for (int i = 0; i < (int)m_pPairsBelongHomography.Count; i += 2)
                 {
                     MKeyPoint r1 = m_pKeyPoints[m_pPairs[i]];
                     MKeyPoint r2 = m_pKeyPoints[m_pPairs[i + 1]];
-
-
-                    if (IsInside(dst_corners, new Point((int)r2.Point.X, (int)r2.Point.Y)))
+                    if (IsInside(m_resultMatching.dst_corners_local, new Point((int)r2.Point.X, (int)r2.Point.Y)))
                     {
-                        m_pPairsInside.Add((m_pPairs[i]));
-                        m_pPairsInside.Add((m_pPairs[i + 1]));
-                        cuenta++;
+                        cuentaInsideHomography++;
                     }
 
-                    center_object.X = (int)Math.Round(r1.Point.X);
-                    center_object.Y = (int)Math.Round(r1.Point.Y);
-                    center_image.X = (int)Math.Round(r2.Point.X);
-                    center_image.Y = (int)Math.Round(r2.Point.Y);
-                    image_homagraphy_transform = AplyHomography(center_object.X, center_object.Y);
-
-                    if (Math.Abs(center_image.X - image_homagraphy_transform.X) <= MARGEN_PIXELS && Math.Abs(center_image.Y - image_homagraphy_transform.Y) <= MARGEN_PIXELS)
-                    {
-                        //keypoint contribute to the correct homograpy
-                        m_pPairsBelongHomography.Add(m_pPairs[i]);
-                        m_pPairsBelongHomography.Add(m_pPairs[i + 1]);
-                        if ((int)r1.Point.X > max_x)
-                            max_x = (int)r1.Point.X;
-                        if ((int)r1.Point.Y > max_y)
-                            max_y = (int)r1.Point.Y;
-                        if ((int)r1.Point.X < min_x)
-                            min_x = (int)r1.Point.Y;
-                        if ((int)r1.Point.Y < min_y)
-                            min_y = (int)r1.Point.Y;
-                    } 
                 }
 
-            }
 
-            double x = min_x;
-            double y = min_y;
-            m_resultMatching.dst_corners_local[0] = AplyHomography(x, y);
-
-            x = max_x; y = min_y;
-            m_resultMatching.dst_corners_local[1] = AplyHomography(x, y);
-
-            x = max_x; y = max_y;
-            m_resultMatching.dst_corners_local[2] = AplyHomography(x, y);
-
-            x = min_x; y = max_y;
-            m_resultMatching.dst_corners_local[3] = AplyHomography(x, y);
-
-
-            int cuentaInsideHomography = 0;
-            for (int i = 0; i < (int)m_pPairsBelongHomography.Count; i += 2)
-            {
-                MKeyPoint r1 = m_pKeyPoints[m_pPairs[i]];
-                MKeyPoint r2 = m_pKeyPoints[m_pPairs[i + 1]];
-                if (IsInside(m_resultMatching.dst_corners_local, new Point((int)r2.Point.X, (int)r2.Point.Y)))
+                m_resultMatching.npoints_Homography = m_pPairsBelongHomography.Count / 2;
+                m_resultMatching.npoints_Homography_inside = cuentaInsideHomography;
+                m_resultMatching.npoints_included_homography = m_point_included_homography;
+                int tmpcuenta2 = 0;
+                for (int i = 0; i < 4; i++)
                 {
-                    cuentaInsideHomography++;
+                    if (IsInside(Image.m_src_corners, m_resultMatching.dst_corners_local[i]))
+                        tmpcuenta2++;
+                    //Logging("esquina %d: x=%d y=%d\n",i,dst_corners[i].x,dst_corners[i].y);
+                }
+                if (tmpcuenta2 != 4)
+                {
+
+                    m_resultMatching.bdst_corners_local_inside = false;
+                }
+                else
+                {
+
+                    m_resultMatching.bdst_corners_local_inside = true;
                 }
 
+
+                if (m_pPairs.Count != 0)
+                    MatchingQuality = ((float)(cuenta * 2.0) / (float)m_pPairs.Count()) * 100;
+                else
+                    MatchingQuality = 0.0;
+
+                m_resultMatching.common_KeyPoints = (int)m_pPairs.Count / 2;
+                m_resultMatching.inside_KeyPoints = cuenta;
+                m_resultMatching.quality = (float)MatchingQuality;
+                m_resultMatching.total_KeyPoints = (int)m_pDescriptors.Rows;
+                for (int k = 0; k < 4; k++)
+                {
+                    m_resultMatching.dst_corners[k].X = dst_corners[k].X;
+                    m_resultMatching.dst_corners[k].Y = dst_corners[k].Y;
+                }
+                m_resultMatching.total_other_keyPoints = Image.m_pDescriptors.Rows;
+                return MatchingQuality;
             }
-
-
-            m_resultMatching.npoints_Homography = m_pPairsBelongHomography.Count / 2;
-            m_resultMatching.npoints_Homography_inside = cuentaInsideHomography;
-
-            int tmpcuenta2 = 0;
-            for (int i = 0; i < 4; i++)
+            catch (Exception e)
             {
-                if (IsInside(Image.m_src_corners, m_resultMatching.dst_corners_local[i]))
-                    tmpcuenta2++;
-                //Logging("esquina %d: x=%d y=%d\n",i,dst_corners[i].x,dst_corners[i].y);
+                throw new SpinPlatform.Errors.SpinException("CSurf: CalcularCoeficientes : " + e.Message);
             }
-            if (tmpcuenta2 != 4)
-            {
-
-                m_resultMatching.bdst_corners_local_inside = false;
-            }
-            else
-            {
-
-                m_resultMatching.bdst_corners_local_inside = true;
-            }
-
-
-            if (m_pPairs.Count != 0)
-                MatchingQuality = (float)cuenta / (float)m_pPairs.Count() * 2.0 * 100;
-            else
-                MatchingQuality = 0.0;
-
-
-            m_resultMatching.common_KeyPoints = (int)m_pPairs.Count / 2;
-            m_resultMatching.inside_KeyPoints = cuenta;
-            m_resultMatching.quality = (float)MatchingQuality;
-            m_resultMatching.total_KeyPoints = (int)m_pDescriptors.Rows;
-            for (int k = 0; k < 4; k++)
-            {
-                m_resultMatching.dst_corners[k].X = dst_corners[k].X;
-                m_resultMatching.dst_corners[k].Y = dst_corners[k].Y;
-            }
-            m_resultMatching.total_other_keyPoints = Image.m_pDescriptors.Rows;
-            return MatchingQuality;
         }
         int FlannFindPairs(CSurf Image)
         {
-            int length = (int)(m_pDescriptors.Cols);
-            Matrix<float> flann_object = new Matrix<float>(m_pDescriptors.Rows, m_pDescriptors.Cols);
-            Matrix<float> flann_image = new Matrix<float>(Image.m_pDescriptors.Rows, m_pDescriptors.Cols);
-            // copy descriptors
-            flann_object.Data = m_pDescriptors.Data;
-            flann_image.Data = Image.m_pDescriptors.Data;
-
-            Matrix<int> flann_indices = new Matrix<int>(m_pDescriptors.Rows, 2);
-            Matrix<float> flann_dists = new Matrix<float>(m_pDescriptors.Rows, 2);
-            Emgu.CV.Flann.Index flann_index = new Index(flann_image, 4); // using 4 randomized kdtrees
-            flann_index.KnnSearch(flann_object, flann_indices, flann_dists, 2, 64);
-
-            //We have to remove the m_pPairs because it remember previous call- ¿BUG?
-            m_pPairs.Clear();
-            m_pPairsInside.Clear();
-            m_pPairsBelongHomography.Clear();
-            m_pDist.Clear();
-            int count = 0;
-            for (int i = 0; i < flann_indices.Rows; ++i)
+            try
             {
-                if (flann_dists[i, 0] < 0.6 * flann_dists[i, 1])
-                { //theory says this is the correct, the more the less exahustive the comparation
-                    //if (dists_ptr[2*i]<0.5*dists_ptr[2*i+1] ) {
-                    //if (dists_ptr[2*i]<0.7*dists_ptr[2*i+1] ) {
-                    //if (dists_ptr[2*i]<0.55*dists_ptr[2*i+1] ) {
-                    //if (dists_ptr[2*i]<0.65*dists_ptr[2*i+1] ) {
-                    //if (dists_ptr[2*i]<0.1 ) {
-                    //Logging("%d\n",indices_ptr[2*i]);
-                    if (flann_indices[i, 0] > Image.m_pDescriptors.Rows)
-                        ;
-                    else
-                    {
-                        if (flann_indices[i, 0]<m_pKeyPoints.Size&&i<m_pKeyPoints.Size)
+                int length = (int)(m_pDescriptors.Cols);
+                Matrix<float> flann_object = new Matrix<float>(m_pDescriptors.Rows, m_pDescriptors.Cols);
+                Matrix<float> flann_image = new Matrix<float>(Image.m_pDescriptors.Rows, m_pDescriptors.Cols);
+                // copy descriptors
+                flann_object.Data = m_pDescriptors.Data;
+                flann_image.Data = Image.m_pDescriptors.Data;
+
+                Matrix<int> flann_indices = new Matrix<int>(m_pDescriptors.Rows, 2);
+                Matrix<float> flann_dists = new Matrix<float>(m_pDescriptors.Rows, 2);
+                Emgu.CV.Flann.Index flann_index = new Index(flann_image, 4); // using 4 randomized kdtrees
+                flann_index.KnnSearch(flann_object, flann_indices, flann_dists, 2, 64);
+
+                //We have to remove the m_pPairs because it remember previous call- ¿BUG?
+                m_pPairs.Clear();
+                m_pPairsInside.Clear();
+                m_pPairsBelongHomography.Clear();
+                m_pDist.Clear();
+                int count = 0;
+                for (int i = 0; i < flann_indices.Rows; ++i)
+                {
+                    if (flann_dists[i, 0] < 0.6 * flann_dists[i, 1])
+                    { //theory says this is the correct, the more the less exahustive the comparation
+                        //if (dists_ptr[2*i]<0.5*dists_ptr[2*i+1] ) {
+                        //if (dists_ptr[2*i]<0.7*dists_ptr[2*i+1] ) {
+                        //if (dists_ptr[2*i]<0.55*dists_ptr[2*i+1] ) {
+                        //if (dists_ptr[2*i]<0.65*dists_ptr[2*i+1] ) {
+                        //if (dists_ptr[2*i]<0.1 ) {
+                        //Logging("%d\n",indices_ptr[2*i]);
+                        if (flann_indices[i, 0] > Image.m_pDescriptors.Rows)
+                            ;
+                        else
                         {
-                            m_pPairs.Add(i);
-                            m_pPairs.Add(flann_indices[i, 0]);
-                            m_pDist.Add(flann_dists[i, 0]);
-                            // m_pDist.Add(flann_dists[i, 0]);  ///BUG?????????????no seria[ i,1]???                        
-                            count++; 
+                            if (flann_indices[i, 0] < m_pKeyPoints.Size && i < m_pKeyPoints.Size)
+                            {
+                                m_pPairs.Add(i);
+                                m_pPairs.Add(flann_indices[i, 0]);
+                                m_pDist.Add(flann_dists[i, 0]);
+                                // m_pDist.Add(flann_dists[i, 0]);  ///BUG?????????????no seria[ i,1]???                        
+                                count++;
+                            }
                         }
                     }
                 }
+
+                flann_object.Dispose();
+                flann_image.Dispose();
+                flann_indices.Dispose();
+                flann_dists.Dispose();
+
+                return count;
+
+
             }
-
-            flann_object.Dispose();
-            flann_image.Dispose();
-            flann_indices.Dispose();
-            flann_dists.Dispose();
-
-            return count;
-
-
+            catch (Exception e)
+            {
+                throw new SpinPlatform.Errors.SpinException("CSurf: FlannFindPairs : " + e.Message);
+            }
         }    
         bool LocatePlanarObject(CSurf Image, ref Point[] dst_corners, int modo = MODE_CESAR)
         {
-            int i, n;
-            n = m_pPairs.Count / 2;
-            if (n < 4) return false;            
-           
-           
-            Matrix<byte> mask = new Matrix<byte>(n, 1);
-            mask.SetValue(255);
-
-            if (modo == MODE_CESAR)
+            try
             {
+                int i, n;
+                n = m_pPairs.Count / 2;
+                if (n < 4) return false;
 
-                Matrix<float> pt1, pt2;
-                pt1 = new Matrix<float>(n, 2);
-                pt2 = new Matrix<float>(n, 2);
 
+                Matrix<byte> mask = new Matrix<byte>(n, 1);
+                mask.SetValue(255);
 
-                for (i = 0; i < n; i++)
+                if (modo == MODE_CESAR)
                 {
-                    pt1[i, 0] = m_pKeyPoints.ToArray()[m_pPairs[i * 2]].Point.X;
-                    pt1[i, 1] = m_pKeyPoints.ToArray()[m_pPairs[i * 2]].Point.Y;
-                    pt2[i, 0] = Image.m_pKeyPoints.ToArray()[m_pPairs[i * 2 + 1]].Point.X;
-                    pt2[i, 1] = Image.m_pKeyPoints.ToArray()[m_pPairs[i * 2 + 1]].Point.Y;
+
+                    Matrix<float> pt1, pt2;
+                    pt1 = new Matrix<float>(n, 2);
+                    pt2 = new Matrix<float>(n, 2);
+
+
+                    for (i = 0; i < n; i++)
+                    {
+                        pt1[i, 0] = m_pKeyPoints.ToArray()[m_pPairs[i * 2]].Point.X;
+                        pt1[i, 1] = m_pKeyPoints.ToArray()[m_pPairs[i * 2]].Point.Y;
+                        pt2[i, 0] = Image.m_pKeyPoints.ToArray()[m_pPairs[i * 2 + 1]].Point.X;
+                        pt2[i, 1] = Image.m_pKeyPoints.ToArray()[m_pPairs[i * 2 + 1]].Point.Y;
+                    }
+
+                    if (!CvInvoke.cvFindHomography(pt1.Ptr, pt2.Ptr, m_MatrixHomographyMat.Ptr, HOMOGRAPHY_METHOD.RANSAC, MARGEN_PIXELS, mask.Ptr))
+                        return false;
+                    int nonZeroCount = CvInvoke.cvCountNonZero(mask);
+                    m_point_included_homography = nonZeroCount;
+
+                    if (nonZeroCount < 5)
+                        return false;
+                    for (i = 0; i < 4; i++)
+                    {
+                        double x = m_src_corners[i].X, y = m_src_corners[i].Y;
+                        dst_corners[i] = AplyHomography(x, y);
+                    }
+                    pt1.Dispose();
+                    pt2.Dispose();
                 }
 
-                if (!CvInvoke.cvFindHomography(pt1.Ptr, pt2.Ptr, m_MatrixHomographyMat.Ptr, HOMOGRAPHY_METHOD.RANSAC, MARGEN_PIXELS, mask.Ptr))
-                    return false;
-                int nonZeroCount = CvInvoke.cvCountNonZero(mask);
-                if (nonZeroCount < 5)
-                    return false;
-                for (i = 0; i < 4; i++)
+                if (modo == MODE_SURF)
                 {
-                    double x = m_src_corners[i].X, y = m_src_corners[i].Y;
-                    dst_corners[i] = AplyHomography(x, y);
+                    Matrix<int> indices;
+                    indices = new Matrix<int>(n, 2);
+                    MKeyPoint[] ptos1 = new MKeyPoint[n];
+                    MKeyPoint[] ptos2 = new MKeyPoint[n];
+
+                    for (i = 0; i < n; i++)
+                    {
+
+                        ptos1[i] = m_pKeyPoints.ToArray()[m_pPairs[i * 2]];
+                        ptos2[i] = Image.m_pKeyPoints.ToArray()[m_pPairs[i * 2 + 1]];
+                        indices[i, 0] = i;
+                        indices[i, 1] = i;
+                    }
+                    VectorOfKeyPoint modelKeyPoints = new VectorOfKeyPoint();
+                    modelKeyPoints.Push(ptos1);
+                    VectorOfKeyPoint observedKeyPoints = new VectorOfKeyPoint();
+                    observedKeyPoints.Push(ptos2);
+
+                    m_MatrixHomographyMat = Features2DToolbox.GetHomographyMatrixFromMatchedFeatures(modelKeyPoints, observedKeyPoints, indices, mask, 10);
+                    modelKeyPoints.Dispose();
+                    observedKeyPoints.Dispose();
+                    indices.Dispose();
+
+                    int nonZeroCount = CvInvoke.cvCountNonZero(mask);
+                    if (nonZeroCount < 5)
+                        return false;
+
+                    for (i = 0; i < 4; i++)
+                    {
+                        double x = m_src_corners[i].X, y = m_src_corners[i].Y;
+                        dst_corners[i] = AplyHomography(x, y);
+                    }
                 }
-                pt1.Dispose();
-                pt2.Dispose();
+                mask.Dispose();
+                return true;
             }
-
-            if (modo == MODE_SURF)
+            catch (Exception e)
             {
-                Matrix<int> indices;
-                indices = new Matrix<int>(n, 2);
-                MKeyPoint[] ptos1 = new MKeyPoint[n];
-                MKeyPoint[] ptos2 = new MKeyPoint[n];
-
-                for (i = 0; i < n; i++)
-                {
-
-                    ptos1[i] = m_pKeyPoints.ToArray()[m_pPairs[i * 2]];
-                    ptos2[i] = Image.m_pKeyPoints.ToArray()[m_pPairs[i * 2 + 1]];
-                    indices[i, 0] = i;
-                    indices[i, 1] = i;
-                }
-                VectorOfKeyPoint modelKeyPoints = new VectorOfKeyPoint();
-                modelKeyPoints.Push(ptos1);
-                VectorOfKeyPoint observedKeyPoints = new VectorOfKeyPoint();
-                observedKeyPoints.Push(ptos2);
-
-                m_MatrixHomographyMat = Features2DToolbox.GetHomographyMatrixFromMatchedFeatures(modelKeyPoints, observedKeyPoints, indices, mask, 10);
-                modelKeyPoints.Dispose();
-                observedKeyPoints.Dispose();
-                indices.Dispose();
-               
-                int nonZeroCount = CvInvoke.cvCountNonZero(mask);
-                if (nonZeroCount < 5)
-                    return false;
-
-                for (i = 0; i < 4; i++)
-                {
-                    double x = m_src_corners[i].X, y = m_src_corners[i].Y;
-                    dst_corners[i] = AplyHomography(x, y);
-                }
+               throw new SpinPlatform.Errors.SpinException("CSurf: LocatePlanarObject : " + e.Message);
             }
-            mask.Dispose();
-            return true;
         }
         Point AplyHomography(double x, double y)
         {
-            double Z = 1 / (m_MatrixHomographyMat[2, 0] * x + m_MatrixHomographyMat[2, 1] * y + m_MatrixHomographyMat[2, 2]);
-            double X = (m_MatrixHomographyMat[0, 0] * x + m_MatrixHomographyMat[0, 1] * y + m_MatrixHomographyMat[0, 2]) * Z;
-            double Y = (m_MatrixHomographyMat[1, 0] * x + m_MatrixHomographyMat[1, 1] * y + m_MatrixHomographyMat[1, 2]) * Z;
-            return new Point((int)Math.Round(X), (int)Math.Round(Y));
+            try
+            {
+                double Z = 1 / (m_MatrixHomographyMat[2, 0] * x + m_MatrixHomographyMat[2, 1] * y + m_MatrixHomographyMat[2, 2]);
+                double X = (m_MatrixHomographyMat[0, 0] * x + m_MatrixHomographyMat[0, 1] * y + m_MatrixHomographyMat[0, 2]) * Z;
+                double Y = (m_MatrixHomographyMat[1, 0] * x + m_MatrixHomographyMat[1, 1] * y + m_MatrixHomographyMat[1, 2]) * Z;
+                return new Point((int)Math.Round(X), (int)Math.Round(Y));
+            }
+            catch (Exception e)
+            {
+              throw new SpinPlatform.Errors.SpinException("CSurf: AplyHomography : " + e.Message);
+            }
         }
         bool IsInside(Point[] dst_corners, Point point)
         {
-            _Point[] Polygon = new _Point[4];
-            for (int k = 0; k < 4; k++)
+            try
             {
-                Polygon[k] = new _Point(dst_corners[k].X, dst_corners[k].Y);
-                //Polygon[k].x=dst_corners[k].X;
-                //Polygon[k].y=dst_corners[k].Y;
-            }
-            _Point _point = new _Point();
-            _point.x = point.X;
-            _point.y = point.Y;
+                _Point[] Polygon = new _Point[4];
+                for (int k = 0; k < 4; k++)
+                {
+                    Polygon[k] = new _Point(dst_corners[k].X, dst_corners[k].Y);
+                    //Polygon[k].x=dst_corners[k].X;
+                    //Polygon[k].y=dst_corners[k].Y;
+                }
+                _Point _point = new _Point();
+                _point.x = point.X;
+                _point.y = point.Y;
 
-            InsidePoly ipoly = new InsidePoly();
-            if (ipoly.InsidePolygon(Polygon, 4, _point, InsidePoly.INSIDE) == InsidePoly.INSIDE) return true;
-            else return false;
+                InsidePoly ipoly = new InsidePoly();
+                if (ipoly.InsidePolygon(Polygon, 4, _point, InsidePoly.INSIDE) == InsidePoly.INSIDE) return true;
+                else return false;
+            }
+            catch (Exception e)
+            {
+              throw new SpinPlatform.Errors.SpinException("CSurf: IsInside : " + e.Message);
+            }
         }
         public CSurf(CSurf otro)
     {

@@ -133,24 +133,31 @@ namespace Billetrack
             }
             set
             {
-                if (!m_initialized)
+                try
                 {
-                   
+                    if (!m_initialized)
+                    {
+
+                    }
+                    else
+                    {
+                        if (value < MIN_EXPOSURE)
+                        {
+                            value = MIN_EXPOSURE;
+                        }
+
+                        else if (value > MAX_EXPOSURE)
+                        {
+                            value = MAX_EXPOSURE;
+                        }
+
+                        AcqDevice.SetFeatureValue("ExposureTime", value);
+
+                    }
                 }
-                else
-                {
-                    if (value < MIN_EXPOSURE)
-                    {
-                        value = MIN_EXPOSURE;
-                    }
-
-                    else if (value > MAX_EXPOSURE)
-                    {
-                        value = MAX_EXPOSURE;
-                    }
-
-                    AcqDevice.SetFeatureValue("ExposureTime", value);
-
+                catch (Exception e)
+                {                    
+                     throw new SpinPlatform.Errors.SpinException("CGenieCamera: ExposureTime: " + e.Message);
                 }
             }
         }
@@ -179,24 +186,32 @@ namespace Billetrack
             }
             set
             {
-                if (!m_initialized)
+                try
+                {
+                    if (!m_initialized)
+                    {
+
+                    }
+                    else
+                    {
+                        if (value < MIN_FRAMERATE)
+                        {
+                            value = MIN_FRAMERATE;
+                        }
+
+                        else if (value > MAX_FRAMERATE)
+                        {
+                            value = MAX_FRAMERATE;
+                        }
+
+                        AcqDevice.SetFeatureValue("FrameRate", value);
+
+                    }
+                }
+                catch (Exception e)
                 {
                     
-                }
-                else
-                {
-                    if (value < MIN_FRAMERATE)
-                    {
-                        value = MIN_FRAMERATE;
-                    }
-
-                    else if (value > MAX_FRAMERATE)
-                    {
-                        value = MAX_FRAMERATE;
-                    }
-
-                     AcqDevice.SetFeatureValue("FrameRate", value);
-
+                    throw new SpinPlatform.Errors.SpinException("CGenieCamera: FrameRate: " + e.Message);
                 }
             }
         }
@@ -251,81 +266,89 @@ namespace Billetrack
         /// <param name="server">camera server index. Note that index=0 is ths system system and it is not valid</param>
         /// <param name="camera">camera index to select a camera</param>
         public CGenieCamera(int server = 1, int camera = 0, bool usingcamera=true) {
-          
-            m_initialized = false;
 
-            if (usingcamera)
+            try
             {
-                locker = new object();
+                m_initialized = false;
 
-                acqParams = new MyAcquisitionParams();
-                InitAcqParams(acqParams, server, camera);
-                SapLocation loc = new SapLocation(acqParams.ServerName, acqParams.ResourceIndex);
-                if (SapManager.GetResourceCount(acqParams.ServerName, SapManager.ResourceType.Acq) > 0)
+                if (usingcamera)
                 {
-                    Acq = new SapAcquisition(loc, acqParams.ConfigFileName);
-                    Buffers = new SapBuffer(1, Acq, SapBuffer.MemoryType.ScatterGather);
-                    Transfer = new SapAcqToBuf(Acq, Buffers);
+                    locker = new object();
 
-                    // Create acquisition object
-                    if (!Acq.Create())
+                    acqParams = new MyAcquisitionParams();
+                    InitAcqParams(acqParams, server, camera);
+                    SapLocation loc = new SapLocation(acqParams.ServerName, acqParams.ResourceIndex);
+                    if (SapManager.GetResourceCount(acqParams.ServerName, SapManager.ResourceType.Acq) > 0)
+                    {
+                        Acq = new SapAcquisition(loc, acqParams.ConfigFileName);
+                        Buffers = new SapBuffer(1, Acq, SapBuffer.MemoryType.ScatterGather);
+                        Transfer = new SapAcqToBuf(Acq, Buffers);
+
+                        // Create acquisition object
+                        if (!Acq.Create())
+                        {
+                            DestroysObjects(Acq, AcqDevice, Buffers, Transfer, View);
+                            throw new Exception("Error during SapAcquisition creation!\n");
+
+                        }
+                    }
+
+                    if (SapManager.GetResourceCount(acqParams.ServerName, SapManager.ResourceType.AcqDevice) > 0)
+                    {
+                        AcqDevice = new SapAcqDevice(loc, acqParams.ConfigFileName);
+                        Buffers = new SapBuffer(1, AcqDevice, SapBuffer.MemoryType.ScatterGather);
+                        Transfer = new SapAcqDeviceToBuf(AcqDevice, Buffers);
+
+                        // Create acquisition object
+                        if (!AcqDevice.Create())
+                        {
+                            DestroysObjects(Acq, AcqDevice, Buffers, Transfer, View);
+                            throw new Exception("Error during SapAcqDevice creation!\n");
+
+                        }
+                    }
+                    //View = new SapView(Buffers);
+
+                    // End of frame event
+                    Transfer.Pairs[0].EventType = SapXferPair.XferEventType.EndOfFrame;
+                    Transfer.XferNotify += new DALSA.SaperaLT.SapClassBasic.SapXferNotifyHandler(CallbackNewFrame);
+                    Transfer.XferNotifyContext = this;
+
+                    // Create buffer object
+                    if (!Buffers.Create())
                     {
                         DestroysObjects(Acq, AcqDevice, Buffers, Transfer, View);
-                        throw new Exception("Error during SapAcquisition creation!\n");
-
+                        throw new Exception("Error during SapBuffer creation!\n");
                     }
-                }
 
-                if (SapManager.GetResourceCount(acqParams.ServerName, SapManager.ResourceType.AcqDevice) > 0)
-                {
-                    AcqDevice = new SapAcqDevice(loc, acqParams.ConfigFileName);
-                    Buffers = new SapBuffer(1, AcqDevice, SapBuffer.MemoryType.ScatterGather);
-                    Transfer = new SapAcqDeviceToBuf(AcqDevice, Buffers);
 
-                    // Create acquisition object
-                    if (!AcqDevice.Create())
+                    // Create buffer object
+                    if (!Transfer.Create())
                     {
                         DestroysObjects(Acq, AcqDevice, Buffers, Transfer, View);
-                        throw new Exception("Error during SapAcqDevice creation!\n");
-
+                        throw new Exception("Error during SapTransfer creation!\n");
                     }
+
+                    // Create buffer object
+                    //if (!View.Create())
+                    //{
+                    //    DestroysObjects(Acq, AcqDevice, Buffers, Transfer, View);
+                    //    throw new Exception("Error during SapView creation!\n");
+                    //}
+
+                    Current_image = new Image<Gray, byte>(Buffers.Width, Buffers.Height);
                 }
-                //View = new SapView(Buffers);
-
-                // End of frame event
-                Transfer.Pairs[0].EventType = SapXferPair.XferEventType.EndOfFrame;
-                Transfer.XferNotify += new DALSA.SaperaLT.SapClassBasic.SapXferNotifyHandler(CallbackNewFrame);
-                Transfer.XferNotifyContext = this;
-
-                // Create buffer object
-                if (!Buffers.Create())
+                else
                 {
-                    DestroysObjects(Acq, AcqDevice, Buffers, Transfer, View);
-                    throw new Exception("Error during SapBuffer creation!\n");
+                    usingCamera = usingcamera;
                 }
-
-
-                // Create buffer object
-                if (!Transfer.Create())
-                {
-                    DestroysObjects(Acq, AcqDevice, Buffers, Transfer, View);
-                    throw new Exception("Error during SapTransfer creation!\n");
-                }
-
-                // Create buffer object
-                //if (!View.Create())
-                //{
-                //    DestroysObjects(Acq, AcqDevice, Buffers, Transfer, View);
-                //    throw new Exception("Error during SapView creation!\n");
-                //}
-
-                Current_image = new Image<Gray, byte>(Buffers.Width, Buffers.Height); 
+                m_initialized = true;
             }
-            else
+            catch (Exception e)
             {
-                usingCamera = usingcamera;
+                m_initialized = false;
+                throw new SpinPlatform.Errors.SpinException("CGenieCamera: Error creating the Camera :" + e.Message);
             }
-            m_initialized = true;
             
 
         }
@@ -335,43 +358,56 @@ namespace Billetrack
         /// <returns>the last image of the camera</returns>
         public Image<Gray, byte> GetImage()
         {
-           
-            if (!m_initialized)
+
+            try
             {
-                return null;
-            }
-            else
-            {
-                if (usingCamera)
+                if (!m_initialized)
                 {
-                    Image<Gray, byte> temp;
-                    lock (locker)
-                    {
-                        temp = Current_image.Copy();
-                    }
-                    return temp;
+                    return null;
                 }
-                    //if camera is not available ,we take the image from folder
                 else
                 {
-                                     
-                    if (it < imgs.Count)
-                        return new Image<Gray, byte>(imgs[it]);
+                    if (usingCamera)
+                    {
+                        Image<Gray, byte> temp;
+                        lock (locker)
+                        {
+                            temp = Current_image.Copy();
+                        }
+                        return temp;
+                    }
+                    //if camera is not available ,we take the image from folder
                     else
                     {
-                        it = 0;
-                        return null;
+
+                        if (it < imgs.Count)
+                            return new Image<Gray, byte>(imgs[it]);
+                        else
+                        {
+                            it = 0;
+                            return null;
+                        }
                     }
                 }
+            }
+            catch (Exception  e)
+            {
+
+                throw new SpinPlatform.Errors.SpinException("CGenieCamera: GetImage: Error acquiring from the Camera :" + e.Message);
             }
 
         }
         public void NextFileImage()
         {
-
-            it++;
-            if (it >= imgs.Count)
-            { it = 0; MessageBox.Show("All images in folder have been processed"); }  
+            if (!usingCamera)
+            {
+                it++;
+                if (it >= imgs.Count)
+                {
+                    it = 0;
+                    MessageBox.Show("all images in folder have been processed");
+                } 
+            }
 
         }        
         static bool InitAcqParams(MyAcquisitionParams acqParams, int server = 1, int camera = 0)
@@ -456,24 +492,32 @@ namespace Billetrack
         /// <returns>the error code of grab start</returns>
         public int GrabAsync()
         {
-            if (!m_initialized)
+            try
             {
-                return -1;
-            }
-            else if (IsGrabbing)
-            {
-                return -2;
-            }
-            else
-            {
-                if (Transfer.Grab() == true)
+                if (!m_initialized)
                 {
-                    return 1;
+                    return -1;
+                }
+                else if (IsGrabbing)
+                {
+                    return -2;
                 }
                 else
                 {
-                    return 0;
+                    if (Transfer.Grab() == true)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                
+                 throw new SpinPlatform.Errors.SpinException("CGenieCamera: GrabAsync: " + e.Message);
             }
 
         }
@@ -610,39 +654,55 @@ namespace Billetrack
         /// </summary>
         public void Close()
         {
-            DestroysObjects(Acq, AcqDevice, Buffers, Transfer, View);
+            try
+            {
+                DestroysObjects(Acq, AcqDevice, Buffers, Transfer, View);
+            }
+            catch (Exception e)
+            {
+                
+                throw new SpinPlatform.Errors.SpinException("CGenieCamera: Close: " + e.Message);
+            }
         }
         static void DestroysObjects(SapAcquisition acq, SapAcqDevice camera, SapBuffer buf, SapTransfer xfer, SapView view)
         {
 
-            if (xfer != null)
+            try
             {
-                xfer.Destroy();
-                xfer.Dispose();
-            }
+                if (xfer != null)
+                {
+                    xfer.Destroy();
+                    xfer.Dispose();
+                }
 
-            if (camera != null)
-            {
-                camera.Destroy();
-                camera.Dispose();
-            }
+                if (camera != null)
+                {
+                    camera.Destroy();
+                    camera.Dispose();
+                }
 
-            if (acq != null)
-            {
-                acq.Destroy();
-                acq.Dispose();
-            }
+                if (acq != null)
+                {
+                    acq.Destroy();
+                    acq.Dispose();
+                }
 
-            if (buf != null)
-            {
-                buf.Destroy();
-                buf.Dispose();
-            }
+                if (buf != null)
+                {
+                    buf.Destroy();
+                    buf.Dispose();
+                }
 
-            if (view != null)
+                if (view != null)
+                {
+                    view.Destroy();
+                    view.Dispose();
+                }
+            }
+            catch (Exception e)
             {
-                view.Destroy();
-                view.Dispose();
+                
+                 throw new SpinPlatform.Errors.SpinException("CGenieCamera: DestroysObjects : " + e.Message);
             }
         }
     }
