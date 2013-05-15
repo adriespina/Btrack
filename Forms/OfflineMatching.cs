@@ -148,7 +148,7 @@ namespace Billetrack.Forms
                         }
                     }
 
-                    position_max = match.MatchingOneToVarius2(path_recortada,ImagenesAceriavector, out resultados);
+                    position_max = match.MatchingOneToVarius(path_recortada,ImagenesAceriavector, out resultados);
                    // classificator.InsertSetMatches(resultados, position_max);
 
                     watch.Stop();
@@ -193,7 +193,7 @@ namespace Billetrack.Forms
 
                         watch = Stopwatch.StartNew();
 
-                        position_max = match.MatchingOneToVarius(img, ref ImagenesAceriavector, out resultados);
+                        position_max = match.MatchingOneToVarius(img,ImagenesAceriavector, out resultados);
 
                         watch.Stop();
 

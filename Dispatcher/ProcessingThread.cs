@@ -187,7 +187,7 @@ namespace Billetrack
 
 
                     //Perform the matching between the image and all the candidates
-                    int position_max = match.MatchingOneToVarius(total_path, ref CandidatesPaths, out resultados);
+                    int position_max = match.MatchingOneToVarius(total_path, CandidatesPaths, out resultados);
 
                     if (position_max >= 0)
                     {
@@ -198,16 +198,27 @@ namespace Billetrack
                         //delete descriptors files from hard disk
                         File.Delete(CandidatesPaths[position_max] + CSurf.EXTENSION_DESCRIPTORS);
                         File.Delete(CandidatesPaths[position_max] + CSurf.EXTENSION_KEYPOINTS);
+                        //delete results array
+                        foreach (resultMatching rst in resultados)
+                        {
+                            rst.Dispose();
+                        }
                         return img;
                     }
                     else
                     {
                         quality = 0;
                         matchedID = -1;
+                        //delete results array
+                        foreach (resultMatching rst in resultados)
+                        {
+                            rst.Dispose();
+                        }
                         return null;
                         //if matching was wrong 
 
                     }
+                    
 
                 }
                 else
