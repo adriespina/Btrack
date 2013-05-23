@@ -61,7 +61,8 @@ namespace Billetrack
                         xlWorkSheet.Cells[lastUsedRow, 9] = rst.bdst_corners_inside.ToString();
                         xlWorkSheet.Cells[lastUsedRow, 10] = rst.npoints_Homography.ToString();
                         xlWorkSheet.Cells[lastUsedRow, 11] = rst.npoints_Homography_inside.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 12] = rst.bdst_corners_local_inside.ToString();                                          
+                        xlWorkSheet.Cells[lastUsedRow, 12] = rst.bdst_corners_local_inside.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 13] = rst.percentage_points_included_homography.ToString("F0");                  
                     }
                 }
               
@@ -95,7 +96,8 @@ namespace Billetrack
                         xlWorkSheet.Cells[lastUsedRow, 9] = rst.bdst_corners_inside.ToString();
                         xlWorkSheet.Cells[lastUsedRow, 10] = rst.npoints_Homography.ToString();
                         xlWorkSheet.Cells[lastUsedRow, 11] = rst.npoints_Homography_inside.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 12] = rst.bdst_corners_local_inside.ToString();                     
+                        xlWorkSheet.Cells[lastUsedRow, 12] = rst.bdst_corners_local_inside.ToString();
+                        xlWorkSheet.Cells[lastUsedRow, 13] = rst.percentage_points_included_homography.ToString("F0"); 
                     }
            
 

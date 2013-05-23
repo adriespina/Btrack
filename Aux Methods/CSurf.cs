@@ -34,6 +34,7 @@ namespace Billetrack
         public int npoints_Homography;
         public int npoints_Homography_inside;
         public int npoints_included_homography;
+        public double percentage_points_included_homography;
         public bool bFailToCalculate;		///< The object could no calculated because there was no image,keypoints and descriptors
 
         public resultMatching()
@@ -53,6 +54,8 @@ namespace Billetrack
             common_KeyPoints = 0;
             inside_KeyPoints = 0;
             total_other_keyPoints = 0;
+            npoints_included_homography = 0;
+            percentage_points_included_homography = 0;
 
             bdst_corners_inside = false;
             bdst_corners_local_inside = false;
@@ -78,6 +81,8 @@ namespace Billetrack
             common_KeyPoints = 0;
             inside_KeyPoints = 0;
             total_other_keyPoints = 0;
+            npoints_included_homography = 0;
+            percentage_points_included_homography = 0;
 
             bdst_corners_inside = false;
             bdst_corners_local_inside = false;
@@ -1226,7 +1231,8 @@ try
                     if (!CvInvoke.cvFindHomography(pt1.Ptr, pt2.Ptr, m_MatrixHomographyMat.Ptr, HOMOGRAPHY_METHOD.RANSAC, MARGEN_PIXELS, mask.Ptr))
                         return false;
                     int nonZeroCount = CvInvoke.cvCountNonZero(mask);
-                    m_point_included_homography = nonZeroCount;
+                     m_resultMatching.npoints_included_homography  = nonZeroCount;
+                     m_resultMatching.percentage_points_included_homography = (nonZeroCount/n)*100;
 
                     if (nonZeroCount < 5)
                         return false;
