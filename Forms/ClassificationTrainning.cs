@@ -16,6 +16,8 @@ namespace Billetrack.Forms
 
         string img_origin = null;
         string img_destiny = null;
+        int indice_origen = -1;
+        int indice_destiny = -1;
         CMatching match;
         CClassification classificator;
         public ClassificationTrainning()
@@ -99,6 +101,7 @@ namespace Billetrack.Forms
                 {
                     try
                     {
+                        indice_origen = e.RowIndex;
                         img_origin = label_path_origin.Text + "\\" + (string)dataGridView_ORIGIN.Rows[e.RowIndex].Cells[0].Value.ToString();
                         using (Image<Gray, Byte> max_image = new Image<Gray, byte>(img_origin))
                         {
@@ -122,6 +125,7 @@ namespace Billetrack.Forms
                 {
                     try
                     {
+                        indice_destiny = e.RowIndex;
                         img_destiny = label_path_destiny.Text + "\\" + (string)dataGridView_DESTINY.Rows[e.RowIndex].Cells[0].Value.ToString();
                         using (Image<Gray, Byte> max_image = new Image<Gray, byte>(img_destiny))
                         {
@@ -145,10 +149,61 @@ namespace Billetrack.Forms
                 classificator.InsertMatch(result);
                 if (checkBox_correction.Checked)
                 {
-                    classificator.DeleteRowsContaining(result.npoints_included_homography.ToString(), "C");
+                    //classificator.DeleteRowsContaining(result.npoints_included_homography.ToString(), "C");
                 }
+                if (indice_origen >= 0 && indice_origen<dataGridView_ORIGIN.Rows.Count) dataGridView_ORIGIN.Rows.RemoveAt(indice_origen);
+                if (indice_destiny >= 0 && indice_destiny < dataGridView_DESTINY.Rows.Count) dataGridView_DESTINY.Rows.RemoveAt(indice_destiny);
+              //  System.IO.File.Delete(img_destiny);
             }
             else MessageBox.Show("No se han seleccionado imagenes para procesar");
+        }
+
+        private void dataGridView_ORIGIN_SelectionChanged(object sender, EventArgs e)
+        {
+            if (dataGridView_ORIGIN.Rows.Count > 0)
+            {
+                if (dataGridView_ORIGIN.Rows[dataGridView_ORIGIN.SelectedRows[0].Index].Cells[0].Value != null)
+                {
+                    try
+                    {
+                        indice_origen = dataGridView_ORIGIN.SelectedRows[0].Index;
+                        img_origin = label_path_origin.Text + "\\" + (string)dataGridView_ORIGIN.Rows[dataGridView_ORIGIN.SelectedRows[0].Index].Cells[0].Value.ToString();
+                        using (Image<Gray, Byte> max_image = new Image<Gray, byte>(img_origin))
+                        {
+                            picture_origin._cPicture.Image = max_image.ToBitmap();
+                        }
+                    }
+                    catch (Exception)
+                    {
+
+                        img_origin = null;
+                    }
+                }
+            }
+        }
+
+        private void dataGridView_DESTINY_SelectionChanged(object sender, EventArgs e)
+        {
+            if (dataGridView_DESTINY.Rows.Count > 0)
+            {
+                if (dataGridView_DESTINY.Rows[dataGridView_DESTINY.SelectedRows[0].Index].Cells[0].Value != null)
+                {
+                    try
+                    {
+                        indice_destiny = dataGridView_DESTINY.SelectedRows[0].Index;
+                        img_destiny = label_path_destiny.Text + "\\" + (string)dataGridView_DESTINY.Rows[dataGridView_DESTINY.SelectedRows[0].Index].Cells[0].Value.ToString();
+                        using (Image<Gray, Byte> max_image = new Image<Gray, byte>(img_destiny))
+                        {
+                            picture_destiny._cPicture.Image = max_image.ToBitmap();
+                        }
+                    }
+                    catch (Exception)
+                    {
+
+                        img_destiny = null;
+                    }
+                }
+            }
         }
 
     }

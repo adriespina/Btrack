@@ -95,7 +95,7 @@ namespace Billetrack
                         ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).Light = false;
                     }
 
-                    ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).Light = true;
+                    else ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).Light = true;
                     //check other events
              
                     //Check if Billet is in front the camera

@@ -34,7 +34,10 @@ namespace Billetrack
         public int npoints_Homography;
         public int npoints_Homography_inside;
         public int npoints_included_homography;
+        public double percentage_pairs_included_homography;
         public double percentage_points_included_homography;
+        public double points_factor;
+        public double points_factor2;
         public bool bFailToCalculate;		///< The object could no calculated because there was no image,keypoints and descriptors
 
         public resultMatching()
@@ -56,6 +59,7 @@ namespace Billetrack
             total_other_keyPoints = 0;
             npoints_included_homography = 0;
             percentage_points_included_homography = 0;
+            percentage_pairs_included_homography = 0;
 
             bdst_corners_inside = false;
             bdst_corners_local_inside = false;
@@ -83,6 +87,7 @@ namespace Billetrack
             total_other_keyPoints = 0;
             npoints_included_homography = 0;
             percentage_points_included_homography = 0;
+            percentage_pairs_included_homography = 0;
 
             bdst_corners_inside = false;
             bdst_corners_local_inside = false;
@@ -327,7 +332,7 @@ namespace Billetrack
         configurationSurf m_config;       
         bool m_bIsInitiated;
         //System.Threading.Mutex  locker1, locker2, locker3, locker4;
-        int m_point_included_homography;
+        
 
         //metodos privados
 
@@ -350,7 +355,7 @@ namespace Billetrack
                 m_pPairsInside = new List<int>();
                 m_pPairsBelongHomography = new List<int>();
                 m_bIsInitiated = false;
-                m_point_included_homography = 0;
+             
 
 
                 m_config = new configurationSurf();
@@ -527,7 +532,7 @@ namespace Billetrack
                 m_pPairsInside = new List<int>();
                 m_pPairsBelongHomography = new List<int>();
                 m_bIsInitiated = false;
-                m_point_included_homography = 0;
+            
 
                 m_config = new configurationSurf();
                 m_config.hessianThreshold = otro.m_config.hessianThreshold;
@@ -1096,7 +1101,7 @@ try
 
                 m_resultMatching.npoints_Homography = m_pPairsBelongHomography.Count / 2;
                 m_resultMatching.npoints_Homography_inside = cuentaInsideHomography;
-                m_resultMatching.npoints_included_homography = m_point_included_homography;
+              
                 int tmpcuenta2 = 0;
                 for (int i = 0; i < 4; i++)
                 {
@@ -1123,7 +1128,9 @@ try
 
                 m_resultMatching.common_KeyPoints = (int)m_pPairs.Count / 2;
                 m_resultMatching.inside_KeyPoints = cuenta;
+                m_resultMatching.points_factor = cuenta * m_resultMatching.npoints_included_homography;
                 m_resultMatching.quality = (float)MatchingQuality;
+                m_resultMatching.points_factor2 = MatchingQuality * m_resultMatching.npoints_included_homography;
                 m_resultMatching.total_KeyPoints = (int)m_pDescriptors.Rows;
                 for (int k = 0; k < 4; k++)
                 {
@@ -1232,7 +1239,8 @@ try
                         return false;
                     int nonZeroCount = CvInvoke.cvCountNonZero(mask);
                      m_resultMatching.npoints_included_homography  = nonZeroCount;
-                     m_resultMatching.percentage_points_included_homography = (nonZeroCount/n)*100;
+                     m_resultMatching.percentage_pairs_included_homography = ((double)nonZeroCount / (double)n) * 100;
+                     m_resultMatching.percentage_points_included_homography = ((double)nonZeroCount / (double)m_pKeyPoints.ToArray().Length) * 100;
 
                     if (nonZeroCount < 5)
                         return false;
@@ -1271,6 +1279,8 @@ try
                     indices.Dispose();
 
                     int nonZeroCount = CvInvoke.cvCountNonZero(mask);
+                    m_resultMatching.npoints_included_homography = nonZeroCount;
+                    m_resultMatching.percentage_points_included_homography = ((double)nonZeroCount / (double)n) * 100;
                     if (nonZeroCount < 5)
                         return false;
 

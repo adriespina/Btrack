@@ -38,31 +38,36 @@ namespace Billetrack
         {
             try
             {
-                  lastUsedRow = OpenXLS();
-                int initialrow = lastUsedRow;
+                lastUsedRow = OpenXLS();             
                 int contador = 0;
 
                 foreach (resultMatching rst in results)
                 {
-                    contador++;
-                    if (rst.common_KeyPoints!=0)
+                    if (rst!=null)
                     {
-                        lastUsedRow++;
-                        if (contador==index+1) 
-                            xlWorkSheet.Cells[lastUsedRow, 1] ="MATCH";
-                        else xlWorkSheet.Cells[lastUsedRow, 1] = "0";
-                        xlWorkSheet.Cells[lastUsedRow, 2] = rst.quality.ToString("F0");
-                        xlWorkSheet.Cells[lastUsedRow, 3] = rst.npoints_included_homography.ToString();  
-                        xlWorkSheet.Cells[lastUsedRow, 4] = rst.common_KeyPoints.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 5] = rst.inside_KeyPoints.ToString();                       
-                        xlWorkSheet.Cells[lastUsedRow, 6] = rst.total_KeyPoints.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 7] = rst.total_other_keyPoints.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 8] = rst.bHomographyOK.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 9] = rst.bdst_corners_inside.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 10] = rst.npoints_Homography.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 11] = rst.npoints_Homography_inside.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 12] = rst.bdst_corners_local_inside.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 13] = rst.percentage_points_included_homography.ToString("F0");                  
+                        contador++;
+                        if (rst.common_KeyPoints != 0)
+                        {
+                            lastUsedRow++;
+                            if (contador == index + 1)
+                                xlWorkSheet.Cells[lastUsedRow, 1] = "MATCH";
+                            else xlWorkSheet.Cells[lastUsedRow, 1] = "0";
+                            xlWorkSheet.Cells[lastUsedRow, 2] = rst.quality.ToString("F0");
+                            xlWorkSheet.Cells[lastUsedRow, 3] = rst.npoints_included_homography.ToString();
+                            xlWorkSheet.Cells[lastUsedRow, 4] = rst.common_KeyPoints.ToString();
+                            xlWorkSheet.Cells[lastUsedRow, 5] = rst.inside_KeyPoints.ToString();
+                            xlWorkSheet.Cells[lastUsedRow, 6] = rst.total_KeyPoints.ToString();
+                            xlWorkSheet.Cells[lastUsedRow, 7] = rst.total_other_keyPoints.ToString();
+                            xlWorkSheet.Cells[lastUsedRow, 8] = rst.bHomographyOK.ToString();
+                            xlWorkSheet.Cells[lastUsedRow, 9] = rst.bdst_corners_inside.ToString();
+                            xlWorkSheet.Cells[lastUsedRow, 10] = rst.npoints_Homography.ToString();
+                            xlWorkSheet.Cells[lastUsedRow, 11] = rst.npoints_Homography_inside.ToString();
+                            xlWorkSheet.Cells[lastUsedRow, 12] = rst.bdst_corners_local_inside.ToString();
+                            xlWorkSheet.Cells[lastUsedRow, 13] = rst.percentage_points_included_homography.ToString("F2");
+                            xlWorkSheet.Cells[lastUsedRow, 14] = rst.percentage_pairs_included_homography.ToString("F0");
+                            xlWorkSheet.Cells[lastUsedRow, 15] = rst.points_factor.ToString("F0");
+                            xlWorkSheet.Cells[lastUsedRow, 16] = rst.points_factor2.ToString("F0");
+                        } 
                     }
                 }
               
@@ -97,7 +102,10 @@ namespace Billetrack
                         xlWorkSheet.Cells[lastUsedRow, 10] = rst.npoints_Homography.ToString();
                         xlWorkSheet.Cells[lastUsedRow, 11] = rst.npoints_Homography_inside.ToString();
                         xlWorkSheet.Cells[lastUsedRow, 12] = rst.bdst_corners_local_inside.ToString();
-                        xlWorkSheet.Cells[lastUsedRow, 13] = rst.percentage_points_included_homography.ToString("F0"); 
+                        xlWorkSheet.Cells[lastUsedRow, 13] = rst.percentage_points_included_homography.ToString("F2");
+                        xlWorkSheet.Cells[lastUsedRow, 14] = rst.percentage_pairs_included_homography.ToString("F0");
+                        xlWorkSheet.Cells[lastUsedRow, 15] = rst.points_factor.ToString("F0");
+                        xlWorkSheet.Cells[lastUsedRow, 16] = rst.points_factor2.ToString("F0");
                     }
            
 

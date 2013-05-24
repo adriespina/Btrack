@@ -41,8 +41,8 @@
             this.label_path_destiny = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.dataGridView_ORIGIN = new System.Windows.Forms.DataGridView();
-            this.dataGridView_DESTINY = new System.Windows.Forms.DataGridView();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridView_DESTINY = new System.Windows.Forms.DataGridView();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this._controlesOriginPath.SuspendLayout();
@@ -200,10 +200,19 @@
             this.dataGridView_ORIGIN.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Column1});
             this.dataGridView_ORIGIN.Location = new System.Drawing.Point(202, 472);
+            this.dataGridView_ORIGIN.MultiSelect = false;
             this.dataGridView_ORIGIN.Name = "dataGridView_ORIGIN";
+            this.dataGridView_ORIGIN.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridView_ORIGIN.Size = new System.Drawing.Size(363, 266);
             this.dataGridView_ORIGIN.TabIndex = 22;
             this.dataGridView_ORIGIN.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_ORIGIN_CellContentClick);
+            this.dataGridView_ORIGIN.SelectionChanged += new System.EventHandler(this.dataGridView_ORIGIN_SelectionChanged);
+            // 
+            // Column1
+            // 
+            this.Column1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Column1.HeaderText = "FILE NAME";
+            this.Column1.Name = "Column1";
             // 
             // dataGridView_DESTINY
             // 
@@ -213,16 +222,13 @@
             this.dataGridView_DESTINY.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Column2});
             this.dataGridView_DESTINY.Location = new System.Drawing.Point(619, 472);
+            this.dataGridView_DESTINY.MultiSelect = false;
             this.dataGridView_DESTINY.Name = "dataGridView_DESTINY";
+            this.dataGridView_DESTINY.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridView_DESTINY.Size = new System.Drawing.Size(363, 266);
             this.dataGridView_DESTINY.TabIndex = 22;
             this.dataGridView_DESTINY.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_DESTINY_CellContentClick);
-            // 
-            // Column1
-            // 
-            this.Column1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Column1.HeaderText = "FILE NAME";
-            this.Column1.Name = "Column1";
+            this.dataGridView_DESTINY.SelectionChanged += new System.EventHandler(this.dataGridView_DESTINY_SelectionChanged);
             // 
             // Column2
             // 

@@ -37,9 +37,9 @@ namespace Billetrack.Forms
             dataGridView_resultados.ColumnCount = 6;
             dataGridView_resultados.Columns[0].Name = "Imagen original";
             dataGridView_resultados.Columns[1].Name = "Imagen Emparejada";
-            dataGridView_resultados.Columns[2].Name = "Porcentaje";
-            dataGridView_resultados.Columns[3].Name = "Puntos en comun";
-            dataGridView_resultados.Columns[4].Name = "Puntos Dentro";
+            dataGridView_resultados.Columns[2].Name = "Puntos homografia";
+            dataGridView_resultados.Columns[3].Name = "Puntos Dentro";
+            dataGridView_resultados.Columns[4].Name = "Factor";
             dataGridView_resultados.Columns[5].Name = "Tiempo msec";
 
             InitializeBackgroundWorker();
@@ -148,9 +148,12 @@ namespace Billetrack.Forms
                         }
                     }
 
-                    position_max = match.MatchingOneToVarius(path_recortada,ImagenesAceriavector, out resultados);
-                   // classificator.InsertSetMatches(resultados, position_max);
+                    //position_max = match.MatchingOneToVarius(path_recortada,ImagenesAceriavector, out resultados);
+                    
 
+                    position_max = match.MatchingOneToVarius_fast(path_recortada, ImagenesAceriavector,out resultados);
+                    classificator.InsertSetMatches(resultados, position_max);
+                   
                     watch.Stop();
 
                     matchTime = watch.ElapsedMilliseconds;
@@ -163,7 +166,8 @@ namespace Billetrack.Forms
 
                         if (position_max >= 0)
                         {
-                            string[] row = { path_recortada.Substring(path_recortada.LastIndexOf("\\") + 1), ((string)ImagenesAceriavector[position_max]).Substring(path_recortada.LastIndexOf("\\") + 1), resultados[position_max].quality.ToString(), resultados[position_max].common_KeyPoints.ToString(), resultados[position_max].inside_KeyPoints.ToString(), matchTime.ToString() };
+                            //string[] row = { path_recortada.Substring(path_recortada.LastIndexOf("\\") + 1), ((string)ImagenesAceriavector[position_max]).Substring(path_recortada.LastIndexOf("\\") + 1),"0", "0","0", matchTime.ToString() };
+                            string[] row = { path_recortada.Substring(path_recortada.LastIndexOf("\\") + 1), ((string)ImagenesAceriavector[position_max]).Substring(path_recortada.LastIndexOf("\\") + 1), resultados[position_max].npoints_included_homography.ToString(), resultados[position_max].inside_KeyPoints.ToString(), resultados[position_max].points_factor2.ToString(), matchTime.ToString() };
                             ImagenesAceriavector[position_max] = "matched"; //para que no vuelva a procesarla
                             matched++;
                             matched_ok++;
@@ -173,7 +177,17 @@ namespace Billetrack.Forms
                         }
                         else
                         {
-                            string[] row = { path_recortada.Substring(path_recortada.LastIndexOf("\\") + 1), "MATCH NOT FOUND", "0", "0", "0", matchTime.ToString() };
+                            int pos_max = 0;
+                            double factor_max = 0;
+                            for (int i = 0; i < resultados.Length; i++)
+                            {
+                                if (resultados[i].points_factor2>factor_max)
+                                {
+                                    pos_max = i;
+                                    factor_max = resultados[i].points_factor2;
+                                }
+                            }
+                            string[] row = { path_recortada.Substring(path_recortada.LastIndexOf("\\") + 1), "MATCH NOT FOUND", resultados[pos_max].npoints_included_homography.ToString(), resultados[pos_max].inside_KeyPoints.ToString(), resultados[pos_max].points_factor2.ToString(), matchTime.ToString() };
                             matched++;
                             backgroundWorker1.ReportProgress(matched, row);
                         }
@@ -220,13 +234,19 @@ namespace Billetrack.Forms
                 ImagenesAceria.Clear();
                 ImagenesAlam.Clear();
                 Dudosos.Clear();
-                foreach (resultMatching rst in resultados)
+                if (resultados!=null)
                 {
-                    rst.Dispose();
+                    foreach (resultMatching rst in resultados)
+                    {
+                        if (rst!=null)
+                        {
+                           rst.Dispose(); 
+                        } 
+                    } 
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
                 throw;

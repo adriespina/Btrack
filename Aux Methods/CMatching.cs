@@ -455,6 +455,109 @@ namespace Billetrack
          }
      }
 
+       //DEBUG
+     public int MatchingOneToVarius_fast(string filename, string[] filenameMatrixObjects, out resultMatching[] pResult)
+     {
+
+
+         try
+         {
+             string sfilename, sfilenameDescriptors;
+             sfilename = filename;
+             sfilenameDescriptors = filename + CSurf.EXTENSION_DESCRIPTORS;
+             resultMatching[] pResult2 = new resultMatching[filenameMatrixObjects.Length];
+             IWorkItemResult[] tareas = new IWorkItemResult[filenameMatrixObjects.Length];
+             CSurf[] modelos = new CSurf[filenameMatrixObjects.Length];
+             CSurf surf_image;
+
+             //check if exist  ¿hay que liberarlo para poder guardar?
+             // si la imagen modelo no tiene descriptores se los creamos
+
+             try
+             {
+
+                 if (!File.Exists(sfilenameDescriptors))
+                 {
+                     surf_image = new CSurf(sfilename);
+                     surf_image.Save(filename);
+
+                 }
+                 else surf_image = new CSurf(sfilename, -1, -1);
+
+
+                 for (int i = 0; i < filenameMatrixObjects.Length; i++)
+                 {
+                     modelos[i] = new CSurf(surf_image);
+                 }
+                 surf_image.Dispose();
+             }
+             catch (Exception err)
+             {
+
+                 throw new SpinPlatform.Errors.SpinException("CMatching: Calculating descriptors original image : " + err.Message);
+
+             }
+
+             int index = 0;
+
+             //Creamos el pool de hilos con un timeout de 8 segundos
+             smartThreadPool = new SmartThreadPool(MATCHING_TIMEOUT);
+             smartThreadPool.MinThreads = 0;
+             smartThreadPool.MaxThreads = m_numberOfThreads;
+
+
+             foreach (string pos_imagen in filenameMatrixObjects)
+             {
+                 tareas[index] = smartThreadPool.QueueWorkItem(new WorkItemCallback(this.Match), new TaskInfo(modelos[index], pos_imagen, CSurf.MODE_CESAR));
+                 index++;
+
+             }
+
+
+             //OPCION1 HACERLO CON UN WAIT ANY
+
+                     int contador=0;
+                     while (contador<filenameMatrixObjects.Length)
+             {
+                      SmartThreadPool.WaitAny(tareas, MATCHING_TIMEOUT, false);
+                      for (int i = 0; i < pResult2.Length; i++)
+                      {
+                          pResult2[i] = (resultMatching)tareas[i].Result;
+                          if (pResult2[i].points_factor2 >= 800)
+                          {
+                              //smartThreadPool.Cancel(true);
+                              smartThreadPool.Shutdown();                            
+                              pResult = pResult2;
+                              for (int j = 0; j < modelos.Length; j++)
+                              {
+                                  
+                                  modelos[j].Dispose();
+                                  if (pResult2[j] != null) pResult2[j].Dispose();
+                              }
+                              return i;
+
+                          };
+                      }
+                      contador++;
+             }
+              pResult = pResult2;
+               for (int i = 0; i < modelos.Length; i++)
+                     {
+              
+                         modelos[i].Dispose();
+                         if (pResult2[i]!=null) pResult2[i].Dispose();
+                     }
+                     return -1;
+                    
+
+         }
+         catch (Exception e)
+         {
+
+             throw new SpinPlatform.Errors.SpinException("CMatching: MatchingOneToVariusFast : " + e.Message);
+         }
+     }
+
 
         /// <summary>
         /// Funcion para calcular el matching entre 2 imagenes

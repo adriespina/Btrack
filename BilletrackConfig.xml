@@ -3,7 +3,7 @@
 
   <General alt=" ">  
     <INSTALLATION_NAME alt=" " type="string">ACERIA1</INSTALLATION_NAME>  <!--ALAMBRON1-->
-    <PERCENTAGE_MINIMUM_DISK_AVAILABLE alt=" " type="int">80</PERCENTAGE_MINIMUM_DISK_AVAILABLE>    
+    <PERCENTAGE_MINIMUM_DISK_AVAILABLE alt=" " type="int">10</PERCENTAGE_MINIMUM_DISK_AVAILABLE>    
   </General>
   <Match alt=" ">
     <THRESHOLD_QUALITY alt=" " type="int">30</THRESHOLD_QUALITY>
@@ -15,7 +15,7 @@
     <!-- (Local)CONNECTION_STRING alt="cadena de conexion con la base de datos" type="string">User Id=BilletAdmin;Password=billetadmin;Data Source=(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = 10.250.40.49)(PORT = 1521))(CONNECT_DATA =(SID = XE)));</CONNECTION_STRING-->
     <!-- (Spin Server)<CONNECTION_STRING alt="cadena de conexion con la base de datos" type="string">User Id=BilletrackAdmin;Password=billetrackadmin;Data Source=(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = 10.250.40.102)(PORT = 1521))(CONNECT_DATA =(SID = XE)));</CONNECTION_STRING>-->
     <CONNECTION_STRING alt="cadena de conexion con la base de datos" type="string">User Id=BilletrackAdmin;Password=billetrackadmin;Data Source=(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.80.128)(PORT = 1521))(CONNECT_DATA =(SID = XE)));</CONNECTION_STRING>
-    <DATABASE_DEBUG alt="" type="bool">false</DATABASE_DEBUG>
+    <DATABASE_DEBUG alt="" type="bool">true</DATABASE_DEBUG>
   </DataBase>
   <Camera alt=" ">
     <USING_CAMERA alt=" " type="bool">false</USING_CAMERA>
