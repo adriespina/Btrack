@@ -8,6 +8,9 @@
   <Match alt=" ">
     <THRESHOLD_QUALITY alt=" " type="int">30</THRESHOLD_QUALITY>
     <THRESHOLD_INSIDE alt=" " type="int">30</THRESHOLD_INSIDE>
+    <THRESHOLD_FACTOR2 alt=" " type="int">700</THRESHOLD_FACTOR2>
+    <THRESHOLD_TOTAL_KEYPOINTS alt=" " type="int">4187</THRESHOLD_TOTAL_KEYPOINTS>
+    <THRESHOLD_INSIDE_KEYPOINTS alt=" " type="int">51</THRESHOLD_INSIDE_KEYPOINTS>
     <MATCHING_TIMEOUT alt=" IN MSEC" type="int">15000</MATCHING_TIMEOUT>
     <DOUBLE_CHECK alt=" " type="bool">true</DOUBLE_CHECK>
   </Match>a

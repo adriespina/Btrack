@@ -45,6 +45,9 @@ namespace Billetrack
             match.THRESHOLD_QUALITY = parametros.Match.THRESHOLD_QUALITY;
             match.MATCHING_TIMEOUT = parametros.Match.MATCHING_TIMEOUT;
             match.DOUBLE_CHECK = parametros.Match.DOUBLE_CHECK;
+            match.THRESHOLD_FACTOR2 = parametros.Match.THRESHOLD_FACTOR2;
+            match.THRESHOLD_INSIDE_KEYPOINTS = parametros.Match.THRESHOLD_INSIDE_KEYPOINTS;
+            match.THRESHOLD_TOTAL_KEYPOINTS = parametros.Match.THRESHOLD_TOTAL_KEYPOINTS;
             
         }
         public override void FunctionToExecuteByThread()

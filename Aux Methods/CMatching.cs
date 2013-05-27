@@ -40,6 +40,9 @@ namespace Billetrack
         public  int THRESHOLD_INSIDE = 30;//50
         public int MATCHING_TIMEOUT = 10000;
         public bool DOUBLE_CHECK = true;
+        public int THRESHOLD_FACTOR2 = 700;
+        public int THRESHOLD_INSIDE_KEYPOINTS = 51;
+        public int THRESHOLD_TOTAL_KEYPOINTS = 4187;
 
         int m_numberOfThreads;
         private BilletrackDispatcher _padre;
@@ -121,7 +124,7 @@ namespace Billetrack
                  {
                      surf_image = new CSurf(sfilename);
                      surf_image.Save(filename);
-                     surf_image.Clean();
+              
                  }
                  else
                  {
@@ -523,14 +526,15 @@ namespace Billetrack
                       for (int i = 0; i < pResult2.Length; i++)
                       {
                           pResult2[i] = (resultMatching)tareas[i].Result;
-                          if (pResult2[i].points_factor2 >= 800)
+                          //Si es un matching, paro el pool y devuelvo el indice
+                          if (DecissionTree(pResult2[i]))                        
                           {
+                              //cierro el pool y libero memoria
                               //smartThreadPool.Cancel(true);
                               smartThreadPool.Shutdown();                            
                               pResult = pResult2;
                               for (int j = 0; j < modelos.Length; j++)
                               {
-                                  
                                   modelos[j].Dispose();
                                   if (pResult2[j] != null) pResult2[j].Dispose();
                               }
@@ -631,6 +635,23 @@ namespace Billetrack
                 if (this._padre != null) this._padre.AddLogError("Error performing matching in thread Pool :" + e.Message);
                 return null;
             }
+        }
+        bool DecissionTree(resultMatching result)
+        {
+
+            if (result.points_factor2 >= THRESHOLD_FACTOR2)
+            {
+                return true;
+            }
+            else if(result.inside_KeyPoints >= THRESHOLD_INSIDE_KEYPOINTS)  
+            {
+                 return true;
+            }
+             else if(result.total_KeyPoints >= THRESHOLD_TOTAL_KEYPOINTS)  
+            {
+                  return true;
+            }
+            else return false;
         }
         
     }
