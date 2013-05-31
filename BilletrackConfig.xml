@@ -6,11 +6,11 @@
     <PERCENTAGE_MINIMUM_DISK_AVAILABLE alt=" " type="int">10</PERCENTAGE_MINIMUM_DISK_AVAILABLE>    
   </General>
   <Match alt=" ">
-    <THRESHOLD_QUALITY alt=" " type="int">30</THRESHOLD_QUALITY>
-    <THRESHOLD_INSIDE alt=" " type="int">30</THRESHOLD_INSIDE>
-    <THRESHOLD_FACTOR2 alt=" " type="int">700</THRESHOLD_FACTOR2>
+    <THRESHOLD_QUALITY alt=" " type="int">40</THRESHOLD_QUALITY>
+    <THRESHOLD_FACTOR2 alt=" " type="int">1000</THRESHOLD_FACTOR2>
     <THRESHOLD_TOTAL_KEYPOINTS alt=" " type="int">4187</THRESHOLD_TOTAL_KEYPOINTS>
     <THRESHOLD_INSIDE_KEYPOINTS alt=" " type="int">51</THRESHOLD_INSIDE_KEYPOINTS>
+    <THRESHOLD_INCLUDED_HOMOGRAPHY alt=" " type="int">8</THRESHOLD_INCLUDED_HOMOGRAPHY>
     <MATCHING_TIMEOUT alt=" IN MSEC" type="int">15000</MATCHING_TIMEOUT>
     <DOUBLE_CHECK alt=" " type="bool">true</DOUBLE_CHECK>
   </Match>a
@@ -27,6 +27,7 @@
     <MAX_EXPOSURE alt=" " type="int">66566</MAX_EXPOSURE>
     <MIN_FRAMERATE alt=" " type="int">100</MIN_FRAMERATE>
     <MAX_FRAMERATE alt=" " type="int">15000</MAX_FRAMERATE>
+    <AUTO_EXPOSURE_AVERAGE alt=" " type="int">140</AUTO_EXPOSURE_AVERAGE>
   </Camera>
   <PCCom alt=" ">
     <COMSocketType alt=" " type="string">CLIENT</COMSocketType>

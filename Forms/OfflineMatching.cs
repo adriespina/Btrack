@@ -148,11 +148,11 @@ namespace Billetrack.Forms
                         }
                     }
 
-                    //position_max = match.MatchingOneToVarius(path_recortada,ImagenesAceriavector, out resultados);
-                    
+                    position_max = match.MatchingOneToVarius(path_recortada, ImagenesAceriavector, out resultados);
 
-                    position_max = match.MatchingOneToVarius_fast(path_recortada, ImagenesAceriavector,out resultados);
-                    classificator.InsertSetMatches(resultados, position_max);
+
+                    //position_max = match.MatchingOneToVarius_fast(path_recortada, ImagenesAceriavector, out resultados);
+                    //classificator.InsertSetMatches(resultados, position_max);
                    
                     watch.Stop();
 

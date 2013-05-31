@@ -36,14 +36,13 @@ namespace Billetrack
    public  class CMatching
     {
         public  int MAX_N_IMAGES_IN_FOLDER = 200;
-        public  int THRESHOLD_QUALITY = 30;
-        public  int THRESHOLD_INSIDE = 30;//50
+        public  int THRESHOLD_QUALITY = 40;
         public int MATCHING_TIMEOUT = 10000;
         public bool DOUBLE_CHECK = true;
-        public int THRESHOLD_FACTOR2 = 800;
-        public int THRESHOLD_INSIDE_KEYPOINTS = 51;
+        public int THRESHOLD_FACTOR2 = 900;
+        public int THRESHOLD_INSIDE_KEYPOINTS = 30;
         public int THRESHOLD_TOTAL_KEYPOINTS = 4187;
-        public int THRESHOLD_INCLUDED_HOMOGRAPHY = 7;
+        public int THRESHOLD_INCLUDED_HOMOGRAPHY = 6;
 
         int m_numberOfThreads;
         private BilletrackDispatcher _padre;
@@ -230,21 +229,6 @@ namespace Billetrack
 
              }
 
-
-             //OPCION1 HACERLO CON UN WAIT ANY
-
-             //        int contador=0;
-             //        while (contador<filenameMatrixObjects.Length)
-             //{
-             //         SmartThreadPool.WaitAny(tareas, MATCHING_TIMEOUT, false);
-             //         contador++;
-             //}
-             //        for (int i = 0; i < pResult2.Length; i++)
-             //        {
-             //            pResult2[i] = (resultMatching)tareas[i].Result;
-             //        }
-
-
              //OPCION 2 HACERLO CON UN WAIT ALL
 
              bool success = SmartThreadPool.WaitAll(tareas, MATCHING_TIMEOUT, false);
@@ -283,54 +267,17 @@ namespace Billetrack
                  }
                  
              }
+             ////Buscamos la mejor correspodencia y enviamos el indice 
+             int bestmatch = BestMatch(pResult, !DOUBLE_CHECK);
 
-
-             //Buscamos la mejor correspodencia y enviamos el indice 
-             int indice_max_quality = -1, indice_max_matches = -2, indice_max_inside = -3, it = 0;
-             float max_quality = 0, max_matches = 0, max_inside = 0;
-             foreach (resultMatching rst in pResult)
-             {
-                 if (rst != null)
-                 {
-                     if (rst.quality > THRESHOLD_QUALITY && rst.inside_KeyPoints > THRESHOLD_INSIDE)
-                     {
-
-                         if (rst.quality == max_quality)
-                         {
-                             if (rst.common_KeyPoints > max_matches || rst.inside_KeyPoints > max_inside)
-                             {
-                                 indice_max_quality = it;
-                             }
-
-                         }
-                         if (rst.quality > max_quality)
-                         {
-                             indice_max_quality = it;
-                             max_quality = rst.quality;
-                         }
-
-                         if (rst.common_KeyPoints > max_matches)
-                         {
-                             indice_max_matches = it;
-                             max_matches = rst.common_KeyPoints;
-                         }
-                         if (rst.inside_KeyPoints > max_inside)
-                         {
-                             indice_max_inside = it;
-                             max_inside = rst.inside_KeyPoints;
-                         }
-
-                     }
-                     it++;
-                 }
-             }
+            
 
              if (DOUBLE_CHECK)
              {
-                 //si todos coinciden es una match perfecto y envio el indice
-                 if (indice_max_quality >= 0 && (indice_max_quality == indice_max_matches) && (indice_max_quality == indice_max_inside))
+                 ////si todos coinciden es una match perfecto y envio el indice(bestmatch>0)                
+                 if (bestmatch > 0)
                  {
-                     return indice_max_quality;
+                     return bestmatch;
                  }
 
 
@@ -368,7 +315,7 @@ namespace Billetrack
                      else
                      {
                          smartThreadPool.Join();
-                         smartThreadPool.Shutdown();                         
+                         smartThreadPool.Shutdown();
                          pResult = null;
                          return -2;
                      }
@@ -380,79 +327,20 @@ namespace Billetrack
                      smartThreadPool.Dispose();
                      pResult = pResult2;
                      //borramos los descriptores usados
-             
+
                      for (int i = 0; i < modelos.Length; i++)
                      {
-              
+
                          modelos[i].Dispose();
                          pResult2[i].Dispose();
                      }
-
-                     indice_max_quality = -1; indice_max_quality = -1; indice_max_matches = -2; indice_max_inside = -3; it = 0;
-                     max_quality = 0; max_matches = 0; max_inside = 0; it = 0; max_quality = 0;
-
-                     //Buscamos la mejor correspodencia y enviamos el indice 
-                     foreach (resultMatching rst in pResult)
-                     {
-                         if (rst.quality > THRESHOLD_QUALITY && rst.inside_KeyPoints > THRESHOLD_INSIDE)
-                         {
-
-                             if (rst.quality == max_quality)
-                             {
-                                 if (rst.common_KeyPoints > max_matches || rst.inside_KeyPoints > max_inside)
-                                 {
-                                     indice_max_quality = it;
-                                 }
-
-                             }
-                             if (rst.quality > max_quality)
-                             {
-                                 indice_max_quality = it;
-                                 max_quality = rst.quality;
-                             }
-                             if (rst.common_KeyPoints > max_matches)
-                             {
-                                 indice_max_matches = it;
-                                 max_matches = rst.common_KeyPoints;
-                             }
-                             if (rst.inside_KeyPoints > max_inside)
-                             {
-                                 indice_max_inside = it;
-                                 max_inside = rst.inside_KeyPoints;
-                             }
-
-                         }
-                         it++;
-                     }
-
-
-                     //Envio el indice de mejor calidad aunque no coincidan
-                     if (max_quality >= THRESHOLD_QUALITY)
-                     {
-                         return indice_max_quality;
-                     }
-                     //si la calidad es mala no hay matching
-                     else
-                     {
-                         return -1;
-                     }
-
+                      //Buscamos la mejor correspodencia y enviamos el indice 
+                    
+                     return BestMatch(pResult, true);
                  }
              }
-             else
-             {
-                 //Envio el indice de mejor calidad aunque no coincidan
-                 if (max_quality >= THRESHOLD_QUALITY)
-                 {
-                     return indice_max_quality;
-                 }
-                 //si la calidad es mala no hay matching
-                 else
-                 {
-                     return -1;
-                 }
-
-             }
+             else return bestmatch;
+                    
          }
          catch (Exception e)
          {
@@ -535,6 +423,7 @@ namespace Billetrack
                                  //cierro el pool y libero memoria
                                  //smartThreadPool.Cancel(true);
                                  smartThreadPool.Shutdown();
+                                 smartThreadPool.Dispose();
                                  pResult = pResult2;
                                  for (int j = 0; j < modelos.Length; j++)
                                  {
@@ -548,14 +437,21 @@ namespace Billetrack
                          contador++;
                      }
               pResult = pResult2;
+
+              //cierro el pool y libero memoria
+              //smartThreadPool.Cancel(true);
+              smartThreadPool.Shutdown();
+              smartThreadPool.Dispose();
                for (int i = 0; i < modelos.Length; i++)
                      {
               
                          modelos[i].Dispose();
                          if (pResult2[i]!=null) pResult2[i].Dispose();
                      }
-                     //return BestMatch(pResult);
-               return -1;
+
+             //devuelvo el mejor match de todos los que pasen los umbrales
+               return BestMatch(pResult,true);
+             
                     
 
          }
@@ -657,7 +553,7 @@ namespace Billetrack
             //}
             else return false;
         }
-        int BestMatch(resultMatching[] results)
+        int BestMatch(resultMatching[] results,bool sendmax)
         {
 
             try
@@ -669,7 +565,7 @@ namespace Billetrack
                 {
                     if (rst != null)
                     {
-                        if (rst.npoints_included_homography > THRESHOLD_INCLUDED_HOMOGRAPHY)
+                        if (rst.quality >= THRESHOLD_QUALITY && rst.npoints_included_homography > THRESHOLD_INCLUDED_HOMOGRAPHY)
                         {
 
                             if (rst.quality == max_quality)
@@ -708,6 +604,19 @@ namespace Billetrack
                 {
                     return indice_max_quality;
                 }
+                    else if (sendmax)
+                 {
+                     //Envio el indice de mejor calidad aunque no coincidan
+                     if (max_quality >= THRESHOLD_QUALITY && results[indice_max_quality].npoints_included_homography>=THRESHOLD_INCLUDED_HOMOGRAPHY)
+                     {
+                         return indice_max_quality;
+                     }
+                     else return -1;
+                 }
+                 else
+                 {
+                     return -1;
+                 }
                 //Si las esquinas estan mal calculadas igual los puntos dentro son 0 aunque sea un buen match
                 //else if (indice_max_includedhomography >= 0 )
                 //{
@@ -718,10 +627,7 @@ namespace Billetrack
                 //    else return -1;
                  
                 //}
-                else
-                {
-                    return -1;
-                }
+               
 
             }
             catch (Exception e)
@@ -742,7 +648,7 @@ namespace Billetrack
              {
                  if (rst != null)
                  {
-                     if (rst.quality > THRESHOLD_QUALITY && rst.inside_KeyPoints > THRESHOLD_INSIDE)
+                     if (rst.quality >= THRESHOLD_QUALITY && rst.inside_KeyPoints >= THRESHOLD_INSIDE_KEYPOINTS && rst.inside_KeyPoints >= THRESHOLD_INCLUDED_HOMOGRAPHY)
                      {
 
                          if (rst.quality == max_quality)

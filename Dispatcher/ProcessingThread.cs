@@ -40,14 +40,14 @@ namespace Billetrack
             _Padre = (BilletrackDispatcher)padre;
             _Parametros = parametros;
 
-            match = new CMatching(padre, Environment.ProcessorCount);
-            match.THRESHOLD_INSIDE = parametros.Match.THRESHOLD_INSIDE;
+            match = new CMatching(padre, Environment.ProcessorCount);           
             match.THRESHOLD_QUALITY = parametros.Match.THRESHOLD_QUALITY;
             match.MATCHING_TIMEOUT = parametros.Match.MATCHING_TIMEOUT;
             match.DOUBLE_CHECK = parametros.Match.DOUBLE_CHECK;
             match.THRESHOLD_FACTOR2 = parametros.Match.THRESHOLD_FACTOR2;
             match.THRESHOLD_INSIDE_KEYPOINTS = parametros.Match.THRESHOLD_INSIDE_KEYPOINTS;
             match.THRESHOLD_TOTAL_KEYPOINTS = parametros.Match.THRESHOLD_TOTAL_KEYPOINTS;
+            match.THRESHOLD_INCLUDED_HOMOGRAPHY = parametros.Match.THRESHOLD_INCLUDED_HOMOGRAPHY;
             
         }
         public override void FunctionToExecuteByThread()
