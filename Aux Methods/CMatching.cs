@@ -40,9 +40,10 @@ namespace Billetrack
         public  int THRESHOLD_INSIDE = 30;//50
         public int MATCHING_TIMEOUT = 10000;
         public bool DOUBLE_CHECK = true;
-        public int THRESHOLD_FACTOR2 = 700;
+        public int THRESHOLD_FACTOR2 = 800;
         public int THRESHOLD_INSIDE_KEYPOINTS = 51;
         public int THRESHOLD_TOTAL_KEYPOINTS = 4187;
+        public int THRESHOLD_INCLUDED_HOMOGRAPHY = 7;
 
         int m_numberOfThreads;
         private BilletrackDispatcher _padre;
@@ -266,6 +267,7 @@ namespace Billetrack
 
              //cerramos el pool y copiamos los resultados obtenidos
              smartThreadPool.Shutdown();
+             smartThreadPool.Dispose();
              pResult = pResult2;
              
              //borramos los descriptores usados si no los vamos a usar mas
@@ -366,7 +368,7 @@ namespace Billetrack
                      else
                      {
                          smartThreadPool.Join();
-                         smartThreadPool.Shutdown();
+                         smartThreadPool.Shutdown();                         
                          pResult = null;
                          return -2;
                      }
@@ -375,6 +377,7 @@ namespace Billetrack
 
                      //cerramos el pool y copiamos los resultados obtenidos
                      smartThreadPool.Shutdown();
+                     smartThreadPool.Dispose();
                      pResult = pResult2;
                      //borramos los descriptores usados
              
@@ -511,7 +514,7 @@ namespace Billetrack
 
              foreach (string pos_imagen in filenameMatrixObjects)
              {
-                 tareas[index] = smartThreadPool.QueueWorkItem(new WorkItemCallback(this.Match), new TaskInfo(modelos[index], pos_imagen, CSurf.MODE_CESAR));
+                 tareas[index] = smartThreadPool.QueueWorkItem(new WorkItemCallback(this.Match), new TaskInfo(modelos[index], pos_imagen, CSurf.MODE_SURF));
                  index++;
 
              }
@@ -520,30 +523,30 @@ namespace Billetrack
              //OPCION1 HACERLO CON UN WAIT ANY
 
                      int contador=0;
-                     while (contador<filenameMatrixObjects.Length)
-             {
-                      SmartThreadPool.WaitAny(tareas, MATCHING_TIMEOUT, false);
-                      for (int i = 0; i < pResult2.Length; i++)
-                      {
-                          pResult2[i] = (resultMatching)tareas[i].Result;
-                          //Si es un matching, paro el pool y devuelvo el indice
-                          if (DecissionTree(pResult2[i]))                        
-                          {
-                              //cierro el pool y libero memoria
-                              //smartThreadPool.Cancel(true);
-                              smartThreadPool.Shutdown();                            
-                              pResult = pResult2;
-                              for (int j = 0; j < modelos.Length; j++)
-                              {
-                                  modelos[j].Dispose();
-                                  if (pResult2[j] != null) pResult2[j].Dispose();
-                              }
-                              return i;
+                     while (contador < filenameMatrixObjects.Length)
+                     {
+                         SmartThreadPool.WaitAny(tareas, MATCHING_TIMEOUT, false);
+                         for (int i = 0; i < pResult2.Length; i++)
+                         {
+                             pResult2[i] = (resultMatching)tareas[i].Result;
+                             //Si es un matching, paro el pool y devuelvo el indice
+                             if (DecissionTree(pResult2[i]))
+                             {
+                                 //cierro el pool y libero memoria
+                                 //smartThreadPool.Cancel(true);
+                                 smartThreadPool.Shutdown();
+                                 pResult = pResult2;
+                                 for (int j = 0; j < modelos.Length; j++)
+                                 {
+                                     modelos[j].Dispose();
+                                     if (pResult2[j] != null) pResult2[j].Dispose();
+                                 }
+                                 return i;
 
-                          };
-                      }
-                      contador++;
-             }
+                             };
+                         }
+                         contador++;
+                     }
               pResult = pResult2;
                for (int i = 0; i < modelos.Length; i++)
                      {
@@ -551,7 +554,8 @@ namespace Billetrack
                          modelos[i].Dispose();
                          if (pResult2[i]!=null) pResult2[i].Dispose();
                      }
-                     return -1;
+                     //return BestMatch(pResult);
+               return -1;
                     
 
          }
@@ -643,15 +647,154 @@ namespace Billetrack
             {
                 return true;
             }
-            else if(result.inside_KeyPoints >= THRESHOLD_INSIDE_KEYPOINTS)  
-            {
-                 return true;
-            }
-             else if(result.total_KeyPoints >= THRESHOLD_TOTAL_KEYPOINTS)  
-            {
-                  return true;
-            }
+            //else if (result.npoints_included_homography >= 10&&result.common_KeyPoints>50)
+            //{
+            //    return true;
+            //}
+            // else if(result.total_KeyPoints >= THRESHOLD_TOTAL_KEYPOINTS)  
+            //{
+            //      return true;
+            //}
             else return false;
+        }
+        int BestMatch(resultMatching[] results)
+        {
+
+            try
+            {
+                //Buscamos la mejor correspodencia y enviamos el indice 
+                int indice_max_quality = -1, indice_max_matches = -2, indice_max_includedhomography = -3, it = 0;
+                float max_quality = 0, max_matches = 0, max_includedhomography = 0;
+                foreach (resultMatching rst in results)
+                {
+                    if (rst != null)
+                    {
+                        if (rst.npoints_included_homography > THRESHOLD_INCLUDED_HOMOGRAPHY)
+                        {
+
+                            if (rst.quality == max_quality)
+                            {
+                                if (rst.common_KeyPoints > max_matches || rst.npoints_included_homography > max_includedhomography)
+                                {
+                                    indice_max_quality = it;
+                                }
+
+                            }
+                            if (rst.quality > max_quality)
+                            {
+                                indice_max_quality = it;
+                                max_quality = rst.quality;
+                            }
+
+                            if (rst.common_KeyPoints > max_matches)
+                            {
+                                indice_max_matches = it;
+                                max_matches = rst.common_KeyPoints;
+                            }
+                            if (rst.npoints_included_homography > max_includedhomography)
+                            {
+                                indice_max_includedhomography = it;
+                                max_includedhomography = rst.npoints_included_homography;
+                            }
+
+                        }
+                        it++;
+                    }
+                }
+
+
+                //si todos coinciden es una match perfecto y envio el indice
+                if (indice_max_quality >= 0 && (indice_max_quality == indice_max_matches) && (indice_max_quality == indice_max_includedhomography))
+                {
+                    return indice_max_quality;
+                }
+                //Si las esquinas estan mal calculadas igual los puntos dentro son 0 aunque sea un buen match
+                //else if (indice_max_includedhomography >= 0 )
+                //{
+                //    if (results[indice_max_includedhomography].inside_KeyPoints < 5  && results[indice_max_includedhomography].npoints_included_homography > THRESHOLD_INCLUDED_HOMOGRAPHY * 3)
+                //    {
+                //        return indice_max_includedhomography;
+                //    }
+                //    else return -1;
+                 
+                //}
+                else
+                {
+                    return -1;
+                }
+
+            }
+            catch (Exception e)
+            {
+                
+                throw new SpinPlatform.Errors.SpinException("CMatching: BestMatch : " + e.Message);
+            }
+
+        
+        
+        }
+        int BestMatchOld(resultMatching[] results, bool sendmax)
+        { 
+         //Buscamos la mejor correspodencia y enviamos el indice 
+             int indice_max_quality = -1, indice_max_matches = -2, indice_max_inside = -3, it = 0;
+             float max_quality = 0, max_matches = 0, max_inside = 0;
+             foreach (resultMatching rst in results)
+             {
+                 if (rst != null)
+                 {
+                     if (rst.quality > THRESHOLD_QUALITY && rst.inside_KeyPoints > THRESHOLD_INSIDE)
+                     {
+
+                         if (rst.quality == max_quality)
+                         {
+                             if (rst.common_KeyPoints > max_matches || rst.inside_KeyPoints > max_inside)
+                             {
+                                 indice_max_quality = it;
+                             }
+
+                         }
+                         if (rst.quality > max_quality)
+                         {
+                             indice_max_quality = it;
+                             max_quality = rst.quality;
+                         }
+
+                         if (rst.common_KeyPoints > max_matches)
+                         {
+                             indice_max_matches = it;
+                             max_matches = rst.common_KeyPoints;
+                         }
+                         if (rst.inside_KeyPoints > max_inside)
+                         {
+                             indice_max_inside = it;
+                             max_inside = rst.inside_KeyPoints;
+                         }
+
+                     }
+                     it++;
+                 }
+             }
+
+            
+                 //si todos coinciden es una match perfecto y envio el indice
+                 if (indice_max_quality >= 0 && (indice_max_quality == indice_max_matches) && (indice_max_quality == indice_max_inside))
+                 {
+                     return indice_max_quality;
+                 }
+                 else if (sendmax)
+                 {
+                     //Envio el indice de mejor calidad aunque no coincidan
+                     if (max_quality >= THRESHOLD_QUALITY)
+                     {
+                         return indice_max_quality;
+                     }
+                     else return -1;
+                 }
+                 else
+                 {
+                     return -1;
+                 }
+        
         }
         
     }
