@@ -26,7 +26,7 @@ namespace Billetrack
         public const int MAX_CONFIG_FILES = 36;       // 10 numbers + 26 letters
         public int MIN_EXPOSURE = 32;
         public int MAX_EXPOSURE = 66566;
-
+        public int AUTO_EXPOSURE_AVERAGE = 140;
         public int MIN_FRAMERATE = 100;
         public int MAX_FRAMERATE = 15000;
 
@@ -53,6 +53,7 @@ namespace Billetrack
 
             }
         }
+      
         List<string> imgs;//para guardar la lista de imagenes en el Path_image_source
         int it = 0;//Para recorrer la lista de archivos
 

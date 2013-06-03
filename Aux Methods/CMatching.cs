@@ -559,8 +559,8 @@ namespace Billetrack
             try
             {
                 //Buscamos la mejor correspodencia y enviamos el indice 
-                int indice_max_quality = -1, indice_max_matches = -2, indice_max_includedhomography = -3, it = 0;
-                float max_quality = 0, max_matches = 0, max_includedhomography = 0;
+                int indice_max_quality = -1, indice_max_matches = -2, indice_max_includedhomography = -3, it = 0, indice_factor2 = -4;
+                float max_quality = 0, max_matches = 0, max_includedhomography = 0, max_factor2 = 0;
                 foreach (resultMatching rst in results)
                 {
                     if (rst != null)
@@ -581,11 +581,24 @@ namespace Billetrack
                                 indice_max_quality = it;
                                 max_quality = rst.quality;
                             }
+                            if (rst.points_factor2 > max_factor2)
+                            {
+                                indice_factor2 = it;
+                                max_factor2 =(float) rst.points_factor2;
+                            }
 
                             if (rst.common_KeyPoints > max_matches)
                             {
                                 indice_max_matches = it;
                                 max_matches = rst.common_KeyPoints;
+                            }
+                            if (rst.npoints_included_homography == max_includedhomography)
+                            {
+                                if (rst.quality > max_quality )
+                                {
+                                    indice_max_includedhomography = it;
+                                }
+
                             }
                             if (rst.npoints_included_homography > max_includedhomography)
                             {
@@ -607,9 +620,10 @@ namespace Billetrack
                     else if (sendmax)
                  {
                      //Envio el indice de mejor calidad aunque no coincidan
-                     if (max_quality >= THRESHOLD_QUALITY && results[indice_max_quality].npoints_included_homography>=THRESHOLD_INCLUDED_HOMOGRAPHY)
+                     if (indice_max_includedhomography >= 0)
                      {
-                         return indice_max_quality;
+                         if (results[indice_max_includedhomography].quality >= THRESHOLD_QUALITY) return indice_max_includedhomography;
+                         else return -1;
                      }
                      else return -1;
                  }

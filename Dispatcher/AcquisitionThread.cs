@@ -82,16 +82,14 @@ namespace Billetrack
                     _CurrentBillet.Time = DateTime.Now;
                
                     //Logging
-                    _Parametros.LOGTXTMessage = "New Billet acquired. Cast: " + _CurrentBillet.Family.Cast + " Line : " + _CurrentBillet.Line.ToString("00");
-                    _Padre._Log.SetData(ref _Parametros, "Informacion");
+                    this._Padre.AddLogDesarrollo("New Billet acquired. Cast: " + _CurrentBillet.Family.Cast + " Line : " + _CurrentBillet.Line.ToString("00"));                   
 
                     //Check the if the light is on
                     if (!_Padre._Aux.m_SpotlightOnOff.IsPresent)
                     {
                         ImageEvents.Add(EventBilletrack.NoLight);
                         //Logging
-                        _Parametros.LOGTXTMessage = "No light detected. Cast: " + _CurrentBillet.Family.Cast + " Line : " + _CurrentBillet.Line.ToString("00");
-                        _Padre._LogError.SetData(ref _Parametros, "Informacion");
+                         this._Padre.AddLogInformation("No light detected. Cast: " + _CurrentBillet.Family.Cast + " Line : " + _CurrentBillet.Line.ToString("00"));                       
                         ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).Light = false;
                     }
 
@@ -121,15 +119,14 @@ namespace Billetrack
                         _Padre._BilletrackDB.InsertEmptyImage(ImageEvents, _CurrentBillet);
 
                         //Logging
-                        _Parametros.LOGTXTMessage = "No Billet detected. Cast: " + _CurrentBillet.Family.Cast + " Line : " + _CurrentBillet.Line.ToString("00");
-                        _Padre._LogError.SetData(ref _Parametros, "Informacion");
+                        this._Padre.AddLogInformation("No Billet detected. Cast: " + _CurrentBillet.Family.Cast + " Line : " + _CurrentBillet.Line.ToString("00"));                       
                     }
                     // if billet was detected
                     else
                     {
                         //Autoexposure setting
                         if (UsingCamera)
-                            Camera.ExposureTime = _Padre._Aux.CalculateExposureTimeSimple((int)_Padre._Aux.m_billetSearch.valueCalculated, 140, Camera.ExposureTime);
+                            Camera.ExposureTime = _Padre._Aux.CalculateExposureTimeSimple((int)_Padre._Aux.m_billetSearch.valueCalculated, Camera.AUTO_EXPOSURE_AVERAGE, Camera.ExposureTime);
                         //Send the image to be processed
                         ((SharedData<Images>)_SharedMemory["LastImage"]).Add(new Images(Image.Copy(), ImageEvents, _CurrentBillet, Camera.ExposureTime));
                         _Events["BilletDetected"].Set();
@@ -141,10 +138,8 @@ namespace Billetrack
             }
             catch (Exception e)
             {
-
-                //Logging
-                _Parametros.LOGTXTMessage = "Error in Acquisition loop: " + e.Message;
-                _Padre._LogError.SetData(ref _Parametros, "Informacion");
+                 this._Padre.AddLogError("Error in Acquisition loop: " + e.Message);
+              
             }
 
         }
@@ -159,15 +154,14 @@ namespace Billetrack
                 Camera.MAX_EXPOSURE = _Parametros.Camera.MAX_EXPOSURE;
                 Camera.MIN_FRAMERATE = _Parametros.Camera.MIN_FRAMERATE;
                 Camera.MAX_FRAMERATE = _Parametros.Camera.MAX_FRAMERATE;
+                Camera.AUTO_EXPOSURE_AVERAGE = _Parametros.Camera.AUTO_EXPOSURE_AVERAGE;
                 if (!UsingCamera) Camera.PATH_IMAGE_SOURCE = _Parametros.Camera.PATH_IMAGE_SOURCE;
                 if (UsingCamera) Camera.GrabAsync();
               
             }
             catch (Exception err)
             {
-                //Logging
-                _Parametros.LOGTXTMessage = "Errorcreating camera " + err.Message;
-                _Padre._LogError.SetData(ref _Parametros, "Informacion");               
+                _Padre.AddLogError("Errorcreating camera " + err.Message);                    
             }
 
  
