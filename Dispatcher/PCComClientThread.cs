@@ -105,10 +105,8 @@ namespace Billetrack
 
             catch (Exception e)
             {
-                //Logging
-                _Parametros.LOGTXTMessage = "Error enviando mensaje a Aceria" +e.Message;
-                _Padre._LogError.SetData(ref _Parametros, "Informacion");
-                //throw new SpinPlatform.Errors.SpinException("SendBilletSteelMaking: " + e.Message);
+               
+                throw new SpinPlatform.Errors.SpinException("SendBilletSteelMaking: " + e.Message);
             }
         }
 
@@ -143,10 +141,8 @@ namespace Billetrack
                         if (eventos[0] == EventBilletrack.NoDetected) error = "10";
                         if (eventos[0] == EventBilletrack.NoLight) error = "12";
                     }
-
-                    //Logging
-                    _Parametros.LOGTXTMessage = "Sending matching to RodMill. Cast: " + billet.Family.Cast + " Line : " + billet.Line.ToString("00");
-                    _Padre._Log.SetData(ref _Parametros, "Informacion");
+                    _Padre.AddLogDesarrollo( "Sending matching to RodMill. Cast: " + billet.Family.Cast + " Line : " + billet.Line.ToString("00"));
+                 
 
                 }
                 //no hubo matching
@@ -163,9 +159,7 @@ namespace Billetrack
                         if (eventos[0] == EventBilletrack.NoLight) error = "12";
 
                     }
-                    //Logging
-                    _Parametros.LOGTXTMessage = "Sending error matching to RodMill";
-                    _Padre._Log.SetData(ref _Parametros, "Informacion");
+                   
                 }
                 System.Buffer.BlockCopy(encoding.GetBytes(palanquilla), 0, (byte[])temp.COMMessage, 2, 9);
                 System.Buffer.BlockCopy(encoding.GetBytes(relleno1), 0, (byte[])temp.COMMessage, 11, 4);
@@ -179,10 +173,8 @@ namespace Billetrack
 
             catch (Exception e)
             {
-                //Logging
-                _Parametros.LOGTXTMessage = "Error enviando mensaje a Alambron" + e.Message;
-                _Padre._LogError.SetData(ref _Parametros, "Informacion");
-                //throw new SpinPlatform.Errors.SpinException("SendBilletRodMill: " + e.Message);
+               
+                throw new SpinPlatform.Errors.SpinException("SendBilletRodMill: " + e.Message);
             }
         }
 
@@ -268,10 +260,7 @@ namespace Billetrack
                             ((SharedData<Billet>)_SharedMemory["LastBillet"]).Set(0, ReceivedBillet.Billet);
                             _Events["BilletToProcess"].Set();
                             _Padre.PrepareEvent("LastBillet");
-
-                            //Logging
-                            _Parametros.LOGTXTMessage = "Received new  Billet. Cast: " + ReceivedBillet.Billet.Family.Cast + " Line : " + ReceivedBillet.Billet.Line.ToString("00");
-                            _Padre._Log.SetData(ref _Parametros, "Informacion");
+                           
 
                             break;
 
@@ -283,12 +272,9 @@ namespace Billetrack
             }
             catch (Exception e)
             {
+                _Padre.AddLogError( "Error in PCComClientThread loop: " + e.Message);
+                ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).Level2ClientAlive = false;
 
-
-                MessageBox.Show("Error com  aceria : " + e.Message);
-                //Logging
-                _Parametros.LOGTXTMessage = "Error in PCComClientThread loop: " + e.Message;
-                _Padre._LogError.SetData(ref _Parametros, "Informacion");
             }
         
            

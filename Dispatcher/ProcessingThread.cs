@@ -122,13 +122,22 @@ namespace Billetrack
 
         private void Descriptors()
         {
-            CSurf surf_image = new CSurf(CroppedImg);
-            surf_image.Save(total_path);
-            surf_image.Dispose();
+            try
+            {
+                CSurf surf_image = new CSurf(CroppedImg);
+                surf_image.Save(total_path);
+                surf_image.Dispose();
 
-            //Logging
-            _Parametros.LOGTXTMessage = "Images processed and saved. Cast: " + ImageInfo._Billet.Family.Cast + " Line : " + ImageInfo._Billet.Line.ToString("00") + "\nSending via FTP";
-            _Padre._Log.SetData(ref _Parametros, "Informacion");
+                //Logging
+                _Parametros.LOGTXTMessage = "Images processed and saved. Cast: " + ImageInfo._Billet.Family.Cast + " Line : " + ImageInfo._Billet.Line.ToString("00") + "\nSending via FTP";
+                _Padre._Log.SetData(ref _Parametros, "Informacion");
+            }
+            catch (Exception e)
+            {
+                
+                throw new SpinException("Error inserting match in database : " + e.Message);
+            }
+            
         }
 
         private void InsertImage()
@@ -149,80 +158,101 @@ namespace Billetrack
 
         private void SendBillet(Billet MatchedBillet, List<EventBilletrack> events)
         {
-            if(_Padre._BilletrackDB.Factory.Name.Contains("ACERIA"))    ((PCComClientThread)_Padre._DispatcherThreads["Communication"]).SendBilletSteelMaking(ImageInfo._Billet, events);
-            if(_Padre._BilletrackDB.Factory.Name.Contains("ALAMBRON"))     ((PCComClientThread)_Padre._DispatcherThreads["Communication"]).SendBilletRodMill(MatchedBillet, events);
+            try
+            {
+                if (_Padre._BilletrackDB.Factory.Name.Contains("ACERIA")) ((PCComClientThread)_Padre._DispatcherThreads["Communication"]).SendBilletSteelMaking(ImageInfo._Billet, events);
+                if (_Padre._BilletrackDB.Factory.Name.Contains("ALAMBRON")) ((PCComClientThread)_Padre._DispatcherThreads["Communication"]).SendBilletRodMill(MatchedBillet, events);
+                ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).Level2ClientAlive = true;
+
+            }
+            catch (Exception e)
+            {
+                ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).Level2ClientAlive = false;
+                throw new SpinException("SendBillet : " + e.Message);
+            }
         }
 
         private Image<Gray, byte> SearchMatching(string searchparameter, out double quality, out int matchedID)
         {
-            Image<Gray, byte> img;
-            if (_Padre._BilletrackDB.Billetrack.Origin != null)
+            try
             {
-                Dictionary<int, string> Candidates;
-                //ask for all the images that can be the same billet in previous factory place
-                try
+                Image<Gray, byte> img;
+                if (_Padre._BilletrackDB.Billetrack.Origin != null)
                 {
-                    Candidates = _Padre._BilletrackDB.GetCandidates(searchparameter);
-                    ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).RemoteDatabase = true;
-
-                }
-                catch (Exception e)
-                {
-                    ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).RemoteDatabase = false;
-                    throw new SpinException("Error getting candidates : " + e.Message);
-                }
-                if (Candidates != null)
-                {
-                    int[] CandidatesID = new int[Candidates.Count];
-                    string[] CandidatesPaths = new string[Candidates.Count];
-                    int i = 0;
-                    //save the candidates ID and candidates path in separated arrays
-                    foreach (KeyValuePair<int, string> entry in Candidates)
+                    Dictionary<int, string> Candidates;
+                    //ask for all the images that can be the same billet in previous factory place
+                    try
                     {
-                        CandidatesID[i] = entry.Key;
-                        CandidatesPaths[i] = entry.Value;
-                       // this._Padre.AddLogDesarrollo("Posible candidato:" + CandidatesID[i] + " con path" + CandidatesPaths[i]);
-                        i++;
-                      
-                  
+                        Candidates = _Padre._BilletrackDB.GetCandidates(searchparameter);
+                        ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).RemoteDatabase = true;
+
                     }
-                    resultMatching[] resultados = new resultMatching[CandidatesID.Length];
-
-
-                    //Perform the matching between the image and all the candidates
-                    int position_max = match.MatchingOneToVarius(total_path, CandidatesPaths, out resultados);
-
-                    if (position_max >= 0)
+                    catch (Exception e)
                     {
-                        //if matching was succesful, retrun the matchedID and quality
-                        quality = (double)resultados[position_max].quality;
-                        matchedID = CandidatesID[position_max];
-                        img = new Image<Gray, byte>(CandidatesPaths[position_max]);
-                        //delete descriptors files from hard disk
-                        File.Delete(CandidatesPaths[position_max] + CSurf.EXTENSION_DESCRIPTORS);
-                        File.Delete(CandidatesPaths[position_max] + CSurf.EXTENSION_KEYPOINTS);
-                        //delete results array
-                        foreach (resultMatching rst in resultados)
+                        ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).RemoteDatabase = false;
+                        throw new SpinException("Error getting candidates : " + e.Message);
+                    }
+                    if (Candidates != null)
+                    {
+                        int[] CandidatesID = new int[Candidates.Count];
+                        string[] CandidatesPaths = new string[Candidates.Count];
+                        int i = 0;
+                        //save the candidates ID and candidates path in separated arrays
+                        foreach (KeyValuePair<int, string> entry in Candidates)
                         {
-                            rst.Dispose();
+                            CandidatesID[i] = entry.Key;
+                            CandidatesPaths[i] = entry.Value;
+                            // this._Padre.AddLogDesarrollo("Posible candidato:" + CandidatesID[i] + " con path" + CandidatesPaths[i]);
+                            i++;
+
+
                         }
-                        return img;
+                        resultMatching[] resultados = new resultMatching[CandidatesID.Length];
+
+
+                        //Perform the matching between the image and all the candidates
+                        int position_max = match.MatchingOneToVarius(total_path, CandidatesPaths, out resultados);
+
+                        if (position_max >= 0)
+                        {
+                            //if matching was succesful, retrun the matchedID and quality
+                            quality = (double)resultados[position_max].quality;
+                            matchedID = CandidatesID[position_max];
+                            img = new Image<Gray, byte>(CandidatesPaths[position_max]);
+                            //delete descriptors files from hard disk
+                            File.Delete(CandidatesPaths[position_max] + CSurf.EXTENSION_DESCRIPTORS);
+                            File.Delete(CandidatesPaths[position_max] + CSurf.EXTENSION_KEYPOINTS);
+                            //delete results array
+                            foreach (resultMatching rst in resultados)
+                            {
+                                rst.Dispose();
+                            }
+                            return img;
+                        }
+                        else
+                        {
+                            quality = 0;
+                            matchedID = -1;
+                            //delete results array
+                            foreach (resultMatching rst in resultados)
+                            {
+                                rst.Dispose();
+                            }
+                            return null;
+                            //if matching was wrong 
+
+                        }
+
+
                     }
                     else
                     {
                         quality = 0;
                         matchedID = -1;
-                        //delete results array
-                        foreach (resultMatching rst in resultados)
-                        {
-                            rst.Dispose();
-                        }
                         return null;
                         //if matching was wrong 
 
                     }
-                    
-
                 }
                 else
                 {
@@ -233,13 +263,10 @@ namespace Billetrack
 
                 }
             }
-            else
+            catch (Exception e)
             {
-                quality = 0;
-                matchedID = -1;
-                return null;
-                //if matching was wrong 
-
+                
+                 throw new SpinException("SearchMatching : " + e.Message);
             }
         }
 
@@ -259,11 +286,13 @@ namespace Billetrack
         {
             if (match.smartThreadPool != null)
             {
-                match.smartThreadPool.Cancel(true);
+                
+                match.smartThreadPool.Shutdown();
+                match.smartThreadPool.Dispose();
 
                 //CUIDADO!!!! de esta manera no espera a que acabe de manera controlado pasando por el closing
                 //Lo hago asi para que no se quede esperando por el timeout del smartThreadPool (15 seg)
-                this._MainThread.Abort();
+                //this._MainThread.Abort();
             }
 
             return base.Stop();
@@ -301,7 +330,7 @@ namespace Billetrack
                 {
                     ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).FTP = false;
 
-                    //throw new SpinException("Error sending the files to the next factory" + error.Message);
+                    throw new SpinException("Error sending the files to the next factory" + error.Message);
                 }
             }
             //else MessageBox.Show("no hay destino");
@@ -334,7 +363,7 @@ namespace Billetrack
                 {
                     ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).FTP = false;
                     MessageBox.Show("error sending ftp : "+error.Message);
-                    //throw new SpinException("Error sending the files to the backup" + error.Message);
+                    throw new SpinException("Error sending the files to the backup" + error.Message);
                 }
 
 
@@ -342,55 +371,63 @@ namespace Billetrack
         }
         private Image<Gray, byte> Match(ref Billet MatchedBillet)
         {
-            string searchparameter = ImageInfo._Billet.Family.Cast;
-            double quality = 0;
-            int matchedID = -1;
-            if (MatchedBillet!=null) MatchedBillet.Dispose();
-            Image<Gray, byte> matched_image = SearchMatching(searchparameter, out quality, out matchedID);
-            if (_StopEvent.WaitOne(0, true))
-            {              
-                return null;
-            }
-
-          
-            //if matching was succesful, insert the match in the database
-           
-
             try
             {
-                MatchedBillet = _Padre._BilletrackDB.InsertMatch(CurrentID, matchedID, quality);
-                ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).RemoteDatabase = true;
+                string searchparameter = ImageInfo._Billet.Family.Cast;
+                double quality = 0;
+                int matchedID = -1;
+                if (MatchedBillet != null) MatchedBillet.Dispose();
+                Image<Gray, byte> matched_image = SearchMatching(searchparameter, out quality, out matchedID);
+                if (_StopEvent.WaitOne(0, true))
+                {
+                    return null;
+                }
 
+
+                //if matching was succesful, insert the match in the database
+
+
+                try
+                {
+                    MatchedBillet = _Padre._BilletrackDB.InsertMatch(CurrentID, matchedID, quality);
+                    ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).RemoteDatabase = true;
+
+                }
+                catch (Exception e)
+                {
+
+                    ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).RemoteDatabase = false;
+
+                    throw new SpinException("Error inserting match in database : " + e.Message);
+                }
+                if (MatchedBillet != null) MatchedBillet.Time = ImageInfo._Billet.Time;
+
+                //send the images to the Process Computer
+                SendBillet(MatchedBillet, ImageInfo.Events);
+
+                if (_Padre._BilletrackDB.Billetrack.Origin != null)
+                {
+                    if (MatchedBillet != null)
+                    {
+                        //Logging
+                        _Parametros.LOGTXTMessage = "New matching. Cast: " + ImageInfo._Billet.Family.Cast + " Line : " + ImageInfo._Billet.Line.ToString("00") + " really was  Cast: " + MatchedBillet.Family.Cast + " Line : " + MatchedBillet.Line.ToString("00");
+                        _Padre._Log.SetData(ref _Parametros, "Informacion");
+                    }
+                    else
+                    {
+                        //Logging
+                        _Parametros.LOGTXTMessage = "No matching found. Cast: " + ImageInfo._Billet.Family.Cast + " Line : " + ImageInfo._Billet.Line.ToString("00");
+                        _Padre._Log.SetData(ref _Parametros, "Informacion");
+                        _Padre._LogError.SetData(ref _Parametros, "Informacion");
+                    }
+                }
+                return matched_image;
             }
             catch (Exception e)
             {
-               
-                ((State)((SharedData<State>)_SharedMemory["State"]).Get(0)).RemoteDatabase = false;
-
-                throw new SpinException("Error inserting match in database : " + e.Message);
+                
+                throw new SpinException("Match: " + e.Message);
             }
-            if (MatchedBillet!=null) MatchedBillet.Time = ImageInfo._Billet.Time;
-
-            //send the images to the Process Computer
-            SendBillet(MatchedBillet, ImageInfo.Events);
-
-            if (_Padre._BilletrackDB.Billetrack.Origin != null)
-            {
-                if (MatchedBillet != null)
-                {
-                    //Logging
-                    _Parametros.LOGTXTMessage = "New matching. Cast: " + ImageInfo._Billet.Family.Cast + " Line : " + ImageInfo._Billet.Line.ToString("00") + " really was  Cast: " + MatchedBillet.Family.Cast + " Line : " + MatchedBillet.Line.ToString("00");
-                    _Padre._Log.SetData(ref _Parametros, "Informacion");
-                }
-                else
-                {
-                    //Logging
-                    _Parametros.LOGTXTMessage = "No matching found. Cast: " + ImageInfo._Billet.Family.Cast + " Line : " + ImageInfo._Billet.Line.ToString("00");
-                    _Padre._Log.SetData(ref _Parametros, "Informacion");
-                    _Padre._LogError.SetData(ref _Parametros, "Informacion");
-                }
-            }
-            return matched_image;
 
         }
     }
